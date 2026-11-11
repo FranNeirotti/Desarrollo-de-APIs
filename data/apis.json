@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-11T10:47:54.320Z",
+  "actualizado": "2026-11-11T10:54:30.385Z",
   "apis": [
     {
       "id": "peg-256",
@@ -180,7 +180,7 @@
         {
           "id": "agn-906-ep-06",
           "metodo": "FEATURE",
-          "rutaONombre": "Sección Aplicado — CTGs (endpoint a definir)",
+          "rutaONombre": "Sección Aplicado — CTGs (filtros)",
           "descripcion": "Tabla de CTGs aplicados con filtros y orden.\nPendiente: filtro Grano, Corredor, Zona; Fecha requiere rango por fechaMovimiento; orden por Estado falta implementar. En validación: orden por Moneda.\n32/39 funciona.",
           "estado": "En Progreso",
           "responsableFeature": "",
@@ -334,7 +334,7 @@
           "id": "agn-906-ep-23",
           "metodo": "FEATURE",
           "rutaONombre": "Modificación PP para CTGs",
-          "descripcion": "Modificar el flag Propia Producción (SI / NO) de CTGs.\nPendiente: pedido, esperando entrega.",
+          "descripcion": "Modificar el flag Propia Producción (SI / NO) de CTGs.\nPendiente: pedido, esperando entrega.\nSe espera poder marcar (POST) las descargas que son propia producción (PP) y leer luego la marca (GET). Adicionalmente se requiere poder filtrar esta columna.",
           "estado": "Pendiente",
           "responsableFeature": "",
           "fechaEstimada": ""
@@ -378,7 +378,7 @@
         {
           "id": "agn-906-ep-28",
           "metodo": "POST",
-          "rutaONombre": "POST exclusión",
+          "rutaONombre": "POST automatización exclusión",
           "descripcion": "Marcar contratos como excluidos de la automatización.\nPendiente: pedido, esperando entrega.",
           "estado": "Pendiente",
           "responsableFeature": "",
