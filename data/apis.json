@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-11T03:07:05.282Z",
+  "actualizado": "2026-11-11T10:18:21.512Z",
   "apis": [
     {
       "id": "peg-256",
@@ -11,7 +11,8 @@
         "rol": "Luciano Scaiano"
       },
       "desarrolloAfectado": [
-        "Tablero de reportería para puertos"
+        "Estadisticas",
+        "Backoffice"
       ],
       "estadoGeneral": "Planificada",
       "fechaEstimadaEntrega": "",
@@ -29,6 +30,87 @@
         "Portal descargas",
         "Agronegocios",
         "B ackoffice"
+      ],
+      "estadoGeneral": "En Desarrollo",
+      "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
+    },
+    {
+      "id": "ce-362",
+      "nombre": "Existencias en puertos",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Estadisticas",
+        "Backoffice"
+      ],
+      "estadoGeneral": "Planificada",
+      "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
+    },
+    {
+      "id": "ce-361",
+      "nombre": "Calidad de granos",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Estadisticas",
+        "backoffice"
+      ],
+      "estadoGeneral": "En Desarrollo",
+      "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
+    },
+    {
+      "id": "ce-233",
+      "nombre": "Posición dolarizada",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Agronegocios",
+        "Backoffice"
+      ],
+      "estadoGeneral": "En Desarrollo",
+      "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
+    },
+    {
+      "id": "agn-229",
+      "nombre": "Mercadería entregada pendiente de aplicar",
+      "contexto": "COMO usuario de la cooperativa o del backoffice QUIERO visualizar el detalle de toneladas pendientes de aplicar con distribución por grano, grilla de compradores y grilla de vendedores PARA comprender mi posición operativa por contraparte y poder navegar al detalle de descargas de cada comprador.\n\nUbicaciones\n\nEstado de cuenta / Búsqueda por cooperativa / Pendiente de Aplicar\n\nEstadísticas / Agronegocios / Corretaje / Pendiente de Aplicar\n\nhttps://www.figma.com/proto/BQi7Srkbjk0zfiKdTo4qzG/GIRO---BACKOFFICE?page-id=10003%3A5401&node-id=10565-4254&viewport=-469%2C-6696%2C0.42&t=Z1eibgCvdHuFBA09-1&scaling=scale-down&content-scaling=fixed&starting-point-node-id=10565%3A4254",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Estadisticas",
+        "Backoffice",
+        "Agronegocios"
+      ],
+      "estadoGeneral": "En Producción",
+      "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
+    },
+    {
+      "id": "agn-383",
+      "nombre": "Disponibilidad granaria",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Agronegocios",
+        "Backoffice"
       ],
       "estadoGeneral": "En Desarrollo",
       "fechaEstimadaEntrega": "",
