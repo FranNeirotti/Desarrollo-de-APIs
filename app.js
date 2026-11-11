@@ -10,6 +10,9 @@
   // ---------------------------------------------------------------------------
   const ESTADOS_API = ['Planificada', 'En Desarrollo', 'En QA / Testing', 'En Producción', 'Bloqueada'];
   const ESTADOS_EP = ['Pendiente', 'En Progreso', 'En Test', 'Completado', 'Bloqueado'];
+  const PRIORIDADES = ['Alta', 'Media', 'Baja'];
+  const PRIORIDAD_DEFAULT = 'Media';
+  const SORT_MODES = ['manual', 'prioridad'];
   const EP_FILTER_PREFIX = 'ep:';
   const METODOS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'EVENT/ASYNC', 'FEATURE'];
   const DIAS_PROXIMA = 14;
@@ -20,6 +23,7 @@
     config: 'aca-apis:github-config',
     token: 'aca-apis:github-token',
     view: 'aca-apis:view',
+    sort: 'aca-apis:sort',
   };
 
   const state = {
@@ -29,6 +33,7 @@
     draftSavedAt: null,
     remoteSha: null,
     view: 'cards',
+    sort: 'manual',
     detailApiId: null,
     saving: false,
     loadError: null,
@@ -161,6 +166,12 @@
   // ---------------------------------------------------------------------------
   // Modelo de datos
   // ---------------------------------------------------------------------------
+  // Sin prioridad (datos anteriores) = Media. El orden manual es el orden del arreglo en el JSON.
+  function normalizePrioridad(p) {
+    const v = str(p).toLowerCase();
+    return PRIORIDADES.find((x) => x.toLowerCase() === v) || PRIORIDAD_DEFAULT;
+  }
+
   function normalizeEndpoint(e, apiId, index, usedIds) {
     if (!e || typeof e !== 'object') {
       throw new Error(`El endpoint #${index + 1} de "${apiId}" no es un objeto válido.`);
@@ -175,6 +186,7 @@
       rutaONombre: str(e.rutaONombre) || id,
       descripcion: str(e.descripcion),
       estado: ESTADOS_EP.includes(e.estado) ? e.estado : 'Pendiente',
+      prioridad: normalizePrioridad(e.prioridad),
       responsableFeature: str(e.responsableFeature),
       fechaEstimada: validDateStr(e.fechaEstimada),
     };
@@ -202,6 +214,7 @@
       responsable: resp,
       desarrolloAfectado: tags,
       estadoGeneral: ESTADOS_API.includes(a.estadoGeneral) ? a.estadoGeneral : 'Planificada',
+      prioridad: normalizePrioridad(a.prioridad),
       fechaEstimadaEntrega: validDateStr(a.fechaEstimadaEntrega),
       endpointsFeatures: eps.map((e, j) => normalizeEndpoint(e, id, j, usedIds)),
     };
@@ -236,6 +249,25 @@
 
   function findApi(id) {
     return state.data.apis.find((a) => a.id === id) || null;
+  }
+
+  // Vista ordenada: "manual" respeta el orden del arreglo; "prioridad" agrupa Alta > Media > Baja
+  // manteniendo el orden manual dentro de cada nivel (sort estable).
+  function sortItems(list) {
+    if (state.sort !== 'prioridad') return list.slice();
+    const rank = (x) => PRIORIDADES.indexOf(x.prioridad);
+    return list.slice().sort((a, b) => rank(a) - rank(b));
+  }
+
+  function moveInList(list, fromId, toId, after) {
+    const from = list.findIndex((x) => x.id === fromId);
+    if (from < 0 || fromId === toId) return false;
+    const [item] = list.splice(from, 1);
+    let to = list.findIndex((x) => x.id === toId);
+    if (to < 0) { list.splice(from, 0, item); return false; }
+    if (after) to += 1;
+    list.splice(to, 0, item);
+    return to !== from;
   }
 
   function apiStats(api) {
@@ -516,7 +548,7 @@
   function haystack(api) {
     const parts = [
       api.id, api.nombre, api.contexto, api.responsable.nombre, api.responsable.rol,
-      api.estadoGeneral, api.desarrolloAfectado.join(' '),
+      api.estadoGeneral, api.prioridad, api.desarrolloAfectado.join(' '),
     ];
     api.endpointsFeatures.forEach((e) => {
       parts.push(e.id, e.metodo, e.rutaONombre, e.descripcion, e.responsableFeature, e.estado);
@@ -575,6 +607,30 @@
   const icn = (name, cls) => `<span class="ms${cls ? ` ${cls}` : ''}" aria-hidden="true">${name}</span>`;
   const badge = (estado) => `<span class="badge badge-${slug(estado)}">${esc(estado)}</span>`;
   const methodTag = (m) => `<span class="method method-${slug(m)}">${esc(m)}</span>`;
+
+  function prioSelect(prioridad, label, apiId, epId) {
+    return `<select class="prio-select prio-${slug(prioridad)}" data-prio data-api-id="${esc(apiId)}"${epId ? ` data-ep-id="${esc(epId)}"` : ''}
+      aria-label="Prioridad de ${esc(label)}" title="Prioridad">
+      ${PRIORIDADES.map((p) => `<option value="${esc(p)}"${p === prioridad ? ' selected' : ''}>${esc(p)}</option>`).join('')}
+    </select>`;
+  }
+
+  function dragHandle(label, apiId, epId) {
+    if (state.sort !== 'manual') return '';
+    return `<button type="button" class="drag-handle" data-drag-handle data-api-id="${esc(apiId)}"${epId ? ` data-ep-id="${esc(epId)}"` : ''}
+      title="Arrastrá para reordenar (o usá las flechas ↑ ↓)" aria-label="Reordenar ${esc(label)}. Usá las flechas arriba y abajo para moverlo."
+      aria-roledescription="control de orden">${icn('drag_indicator')}</button>`;
+  }
+
+  function sortToggleHtml() {
+    const btn = (mode, icon, label, title) => `<button type="button" class="btn btn-sm btn-ghost${state.sort === mode ? ' is-active' : ''}"
+      data-action="set-sort" data-sort-mode="${mode}" aria-pressed="${state.sort === mode}" title="${esc(title)}">${icn(icon)}${label}</button>`;
+    return `<div class="view-toggle sort-toggle" role="group" aria-label="Ordenar por">
+      <span class="sort-toggle-label">Ordenar</span>
+      ${btn('manual', 'drag_indicator', 'Manual', 'Orden manual: arrastrá para reordenar')}
+      ${btn('prioridad', 'sort', 'Prioridad', 'Alta → Media → Baja, respetando el orden manual dentro de cada nivel')}
+    </div>`;
+  }
 
   function progressBar(pct) {
     return `<div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}">` +
@@ -687,9 +743,10 @@
   function cardHtml(api) {
     const s = apiStats(api);
     return `
-      <article class="api-card">
+      <article class="api-card" data-sort-item data-api-id="${esc(api.id)}">
         <div class="api-card-head">
-          <div>
+          ${dragHandle(api.nombre, api.id)}
+          <div class="api-card-title">
             <h3>${esc(api.nombre)}</h3>
             <div class="api-id">${esc(api.id)}</div>
           </div>
@@ -699,6 +756,7 @@
         <dl class="meta">
           <dt>Responsable</dt><dd>${responsableText(api.responsable)}</dd>
           <dt>Entrega</dt><dd>${dateChip(api.fechaEstimadaEntrega, api.estadoGeneral === 'En Producción')}</dd>
+          <dt>Prioridad</dt><dd>${prioSelect(api.prioridad, api.nombre, api.id)}</dd>
         </dl>
         ${tags(api.desarrolloAfectado)}
         <div class="progress-row">
@@ -723,7 +781,8 @@
         <table>
           <thead>
             <tr>
-              <th>API</th><th>Responsable</th><th>Estado</th><th>Avance</th>
+              ${state.sort === 'manual' ? '<th class="cell-handle"><span class="sr-only">Orden</span></th>' : ''}
+              <th>API</th><th>Responsable</th><th>Estado</th><th>Prioridad</th><th>Avance</th>
               <th>Endpoints</th><th>Entrega</th><th>Desarrollo afectado</th><th></th>
             </tr>
           </thead>
@@ -731,10 +790,12 @@
             ${apis.map((api) => {
               const s = apiStats(api);
               return `
-                <tr>
+                <tr data-sort-item data-api-id="${esc(api.id)}">
+                  ${state.sort === 'manual' ? `<td class="cell-handle">${dragHandle(api.nombre, api.id)}</td>` : ''}
                   <td><div class="cell-name">${esc(api.nombre)}</div><div class="api-id">${esc(api.id)}</div></td>
                   <td>${responsableText(api.responsable)}</td>
                   <td>${badge(api.estadoGeneral)}</td>
+                  <td>${prioSelect(api.prioridad, api.nombre, api.id)}</td>
                   <td><div class="progress-row">${progressBar(s.pct)}<span class="progress-label">${s.pct}%</span></div></td>
                   <td>${s.done}/${s.total}</td>
                   <td>${dateChip(api.fechaEstimadaEntrega, api.estadoGeneral === 'En Producción')}</td>
@@ -756,6 +817,7 @@
     const total = state.data.apis.length;
     $('#list-title').textContent = apis.length === total ? `APIs (${total})` : `APIs (${apis.length} de ${total})`;
     $$('[data-action="set-view"]').forEach((b) => b.classList.toggle('is-active', b.dataset.view === state.view));
+    $('#list-sort').innerHTML = sortToggleHtml();
 
     if (state.loadError) {
       list.className = '';
@@ -796,7 +858,7 @@
   function renderAll() {
     renderFilterOptions();
     const f = getFilters();
-    const apis = state.data.apis.filter((a) => matchesFilters(a, f));
+    const apis = sortItems(state.data.apis.filter((a) => matchesFilters(a, f)));
     const alerts = collectAlerts(apis);
     renderKpis(apis, alerts);
     renderAlerts(alerts);
@@ -1192,9 +1254,11 @@
     }
     const s = apiStats(api);
     const apiDone = api.estadoGeneral === 'En Producción';
-    const rows = api.endpointsFeatures.map((e) => {
+    const manual = state.sort === 'manual';
+    const rows = sortItems(api.endpointsFeatures).map((e) => {
       return `
-        <tr>
+        <tr data-sort-item data-api-id="${esc(api.id)}" data-ep-id="${esc(e.id)}">
+          ${manual ? `<td class="cell-handle">${dragHandle(`${e.metodo} ${e.rutaONombre}`, api.id, e.id)}</td>` : ''}
           <td>${methodTag(e.metodo)}</td>
           <td>
             <div class="ep-route">${esc(e.rutaONombre)}</div>
@@ -1203,6 +1267,7 @@
           </td>
           <td>${e.responsableFeature ? esc(e.responsableFeature) : `<span class="inherited" title="Hereda el responsable de la API">${esc(api.responsable.nombre || '—')}</span>`}</td>
           <td>${dateChip(e.fechaEstimada, e.estado === 'Completado')}</td>
+          <td>${prioSelect(e.prioridad, e.rutaONombre, api.id, e.id)}</td>
           <td>
             <select class="status-select status-${slug(e.estado)}" data-ep-status data-api-id="${esc(api.id)}" data-ep-id="${esc(e.id)}"
               aria-label="Estado de ${esc(e.rutaONombre)}" title="Cambiar estado">
@@ -1233,6 +1298,7 @@
           <dl class="meta">
             <dt>Responsable</dt><dd>${responsableText(api.responsable)}</dd>
             <dt>Entrega</dt><dd>${dateChip(api.fechaEstimadaEntrega, apiDone)}</dd>
+            <dt>Prioridad</dt><dd>${prioSelect(api.prioridad, api.nombre, api.id)}</dd>
             <dt>Afecta a</dt><dd>${tags(api.desarrolloAfectado)}</dd>
             <dt>Avance</dt>
             <dd><div class="progress-row">${progressBar(s.pct)}<span class="progress-label">${s.pct}%</span></div></dd>
@@ -1243,16 +1309,21 @@
           <div class="status-summary">
             ${ESTADOS_EP.map((st) => `${badge(st)}<span>${api.endpointsFeatures.filter((e) => e.estado === st).length}</span>`).join(' ')}
           </div>
-          <button type="button" class="btn btn-sm btn-primary" data-action="new-ep" data-api-id="${esc(api.id)}">${icn('add')}Agregar endpoint / feature</button>
+          <div class="detail-section-tools">
+            ${api.endpointsFeatures.length > 1 ? sortToggleHtml() : ''}
+            <button type="button" class="btn btn-sm btn-primary" data-action="new-ep" data-api-id="${esc(api.id)}">${icn('add')}Agregar endpoint / feature</button>
+          </div>
         </div>
         ${api.endpointsFeatures.length ? `
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Método</th><th>Ruta / nombre</th><th>Responsable</th><th>Fecha estimada</th><th>Estado</th><th></th></tr></thead>
+              <thead><tr>${manual ? '<th class="cell-handle"><span class="sr-only">Orden</span></th>' : ''}<th>Método</th><th>Ruta / nombre</th><th>Responsable</th><th>Fecha estimada</th><th>Prioridad</th><th>Estado</th><th></th></tr></thead>
               <tbody>${rows}</tbody>
             </table>
           </div>
-          <p class="hint">${icn('info')}Elegí el estado de cada endpoint/feature desde su desplegable (Pendiente, En Progreso, En Test, Completado, Bloqueado). Los cambios se guardan como borrador local hasta que los publiques.</p>`
+          <p class="hint">${icn('info')}${manual
+            ? 'Arrastrá desde ⋮⋮ (o usá las flechas ↑ ↓ sobre el control) para definir el orden manual. Elegí prioridad y estado desde sus desplegables.'
+            : 'Vista ordenada por prioridad (Alta → Media → Baja). Cambiá a "Manual" para arrastrar y reordenar.'} Los cambios se guardan como borrador local hasta que los publiques.</p>`
         : '<div class="empty">Esta API todavía no tiene endpoints ni features cargados.</div>'}
       </div>
       <footer class="modal-footer">
@@ -1270,6 +1341,156 @@
     ep.estado = estado;
     commit();
     toast(`"${ep.rutaONombre}" → ${ep.estado}`, 'success');
+  }
+
+  function setPrioridad(apiId, epId, prioridad) {
+    const api = findApi(apiId);
+    const target = api && (epId ? api.endpointsFeatures.find((e) => e.id === epId) : api);
+    if (!target || !PRIORIDADES.includes(prioridad) || target.prioridad === prioridad) return;
+    target.prioridad = prioridad;
+    commit();
+    toast(`Prioridad de "${epId ? target.rutaONombre : target.nombre}" → ${prioridad}`, 'success');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Orden manual (arrastrar y soltar con mouse/touch + teclado)
+  // ---------------------------------------------------------------------------
+  let drag = null;
+
+  function announce(msg) {
+    const live = $('#sr-live');
+    if (live) { live.textContent = ''; setTimeout(() => { live.textContent = msg; }, 30); }
+  }
+
+  function sortListFor(apiId, epId) {
+    if (!epId) return state.data.apis;
+    const api = findApi(apiId);
+    return api ? api.endpointsFeatures : null;
+  }
+
+  function itemKey(el) {
+    return el.dataset.epId || el.dataset.apiId;
+  }
+
+  function itemLabel(apiId, epId) {
+    const api = findApi(apiId);
+    if (!api) return '';
+    if (!epId) return api.nombre;
+    const ep = api.endpointsFeatures.find((e) => e.id === epId);
+    return ep ? `${ep.metodo} ${ep.rutaONombre}` : '';
+  }
+
+  function applyMove(apiId, epId, targetKey, after) {
+    const list = sortListFor(apiId, epId);
+    if (!list || !moveInList(list, epId || apiId, targetKey, after)) return false;
+    commit();
+    return true;
+  }
+
+  function focusHandle(apiId, epId) {
+    const sel = epId
+      ? `[data-drag-handle][data-ep-id="${CSS.escape(epId)}"]`
+      : `[data-drag-handle][data-api-id="${CSS.escape(apiId)}"]:not([data-ep-id])`;
+    const h = $(sel);
+    if (h) { h.focus(); h.scrollIntoView({ block: 'nearest' }); }
+  }
+
+  function clearDropMarks() {
+    $$('.drop-before, .drop-after').forEach((el) => el.classList.remove('drop-before', 'drop-after'));
+  }
+
+  function scrollParent(el) {
+    return el.closest('.modal-body') || document.scrollingElement;
+  }
+
+  function onDragStart(ev) {
+    const h = ev.target.closest('[data-drag-handle]');
+    if (!h || ev.button > 0) return;
+    const item = h.closest('[data-sort-item]');
+    if (!item) return;
+    ev.preventDefault();
+    h.setPointerCapture(ev.pointerId);
+    drag = { h, item, apiId: h.dataset.apiId, epId: h.dataset.epId || '', container: item.parentElement, target: null, after: false, x: ev.clientX, y: ev.clientY, scroller: scrollParent(item), raf: 0 };
+    item.classList.add('is-dragging');
+    document.body.classList.add('is-sorting');
+  }
+
+  function updateDropTarget() {
+    if (!drag) return;
+    const { x, y, item, container } = drag;
+    const hit = document.elementFromPoint(x, y);
+    const target = hit && hit.closest('[data-sort-item]');
+    clearDropMarks();
+    if (!target || target === item || target.parentElement !== container) { drag.target = null; return; }
+    const r = target.getBoundingClientRect();
+    const grid = container.classList.contains('api-grid');
+    const after = grid ? x > r.left + r.width / 2 : y > r.top + r.height / 2;
+    drag.target = target;
+    drag.after = after;
+    target.classList.add(after ? 'drop-after' : 'drop-before');
+  }
+
+  function autoScroll() {
+    if (!drag) return;
+    const sc = drag.scroller;
+    const bar = sc === document.scrollingElement ? $('.topbar') : null;
+    const rect = sc === document.scrollingElement
+      ? { top: bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0, bottom: window.innerHeight }
+      : sc.getBoundingClientRect();
+    const edge = 56;
+    let dy = 0;
+    if (drag.y < rect.top + edge) dy = -Math.ceil((rect.top + edge - drag.y) / 4);
+    else if (drag.y > rect.bottom - edge) dy = Math.ceil((drag.y - (rect.bottom - edge)) / 4);
+    if (dy) {
+      sc.scrollTop += dy;
+      updateDropTarget();
+    }
+    drag.raf = requestAnimationFrame(autoScroll);
+  }
+
+  function onDragMove(ev) {
+    if (!drag) return;
+    drag.x = ev.clientX;
+    drag.y = ev.clientY;
+    if (!drag.raf) drag.raf = requestAnimationFrame(autoScroll);
+    updateDropTarget();
+  }
+
+  function onDragEnd(ev, cancel) {
+    if (!drag) return;
+    const d = drag;
+    drag = null;
+    cancelAnimationFrame(d.raf);
+    clearDropMarks();
+    d.item.classList.remove('is-dragging');
+    document.body.classList.remove('is-sorting');
+    if (d.h.hasPointerCapture && ev && ev.pointerId != null && d.h.hasPointerCapture(ev.pointerId)) d.h.releasePointerCapture(ev.pointerId);
+    if (cancel || !d.target) return;
+    if (applyMove(d.apiId, d.epId, itemKey(d.target), d.after)) {
+      const label = itemLabel(d.apiId, d.epId);
+      toast(`Orden actualizado: "${label}" (borrador local).`, 'success');
+      announce(`${label} movido.`);
+    }
+  }
+
+  function onHandleKey(ev) {
+    const h = ev.target.closest('[data-drag-handle]');
+    if (!h) return;
+    const up = ev.key === 'ArrowUp' || ev.key === 'ArrowLeft';
+    const down = ev.key === 'ArrowDown' || ev.key === 'ArrowRight';
+    if (!up && !down) return;
+    ev.preventDefault();
+    const item = h.closest('[data-sort-item]');
+    const siblings = $$(':scope > [data-sort-item]', item.parentElement);
+    const idx = siblings.indexOf(item);
+    const neighbor = siblings[idx + (up ? -1 : 1)];
+    const { apiId } = h.dataset;
+    const epId = h.dataset.epId || '';
+    if (!neighbor) { announce(up ? 'Ya está primero.' : 'Ya está último.'); return; }
+    if (applyMove(apiId, epId, itemKey(neighbor), down)) {
+      focusHandle(apiId, epId);
+      announce(`${itemLabel(apiId, epId)}: posición ${idx + (up ? 0 : 2)} de ${siblings.length}.`);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -1293,6 +1514,7 @@
     form.elements.responsableRol.value = api ? api.responsable.rol : '';
     form.elements.desarrolloAfectado.value = api ? api.desarrolloAfectado.join(', ') : '';
     form.elements.estadoGeneral.value = api ? api.estadoGeneral : 'Planificada';
+    form.elements.prioridad.value = api ? api.prioridad : PRIORIDAD_DEFAULT;
     form.elements.fechaEstimadaEntrega.value = api ? api.fechaEstimadaEntrega : '';
     $('#modal-api').showModal();
     (api ? form.elements.nombre : form.elements.id).focus();
@@ -1314,6 +1536,7 @@
     else if (!nombre) error = 'El nombre es obligatorio.';
     else if (!respNombre) error = 'El responsable es obligatorio.';
     else if (!ESTADOS_API.includes(el.estadoGeneral.value)) error = 'Seleccioná un estado válido.';
+    else if (!PRIORIDADES.includes(el.prioridad.value)) error = 'Seleccioná una prioridad válida.';
     else if (fecha && !parseDate(fecha)) error = 'La fecha estimada no es válida (YYYY-MM-DD).';
     if (error) { errBox.textContent = error; return; }
 
@@ -1325,6 +1548,7 @@
       responsable: { nombre: respNombre, rol: str(el.responsableRol.value) },
       desarrolloAfectado: uniq(el.desarrolloAfectado.value.split(',').map(str).filter(Boolean)),
       estadoGeneral: el.estadoGeneral.value,
+      prioridad: el.prioridad.value,
       fechaEstimadaEntrega: fecha,
       endpointsFeatures: existing ? existing.endpointsFeatures : [],
     };
@@ -1394,6 +1618,7 @@
     form.elements.rutaONombre.value = ep ? ep.rutaONombre : '';
     form.elements.descripcion.value = ep ? ep.descripcion : '';
     form.elements.estado.value = ep ? ep.estado : 'Pendiente';
+    form.elements.prioridad.value = ep ? ep.prioridad : PRIORIDAD_DEFAULT;
     form.elements.fechaEstimada.value = ep ? ep.fechaEstimada : (api.fechaEstimadaEntrega || '');
     form.elements.responsableFeature.value = ep ? ep.responsableFeature : '';
     form.elements.responsableFeature.placeholder = `Vacío = hereda "${api.responsable.nombre || 'responsable de la API'}"`;
@@ -1418,6 +1643,7 @@
     else if (!METODOS.includes(el.metodo.value)) error = 'Seleccioná un método válido.';
     else if (!ruta) error = 'La ruta o nombre es obligatoria.';
     else if (!ESTADOS_EP.includes(el.estado.value)) error = 'Seleccioná un estado válido.';
+    else if (!PRIORIDADES.includes(el.prioridad.value)) error = 'Seleccioná una prioridad válida.';
     else if (fecha && !parseDate(fecha)) error = 'La fecha estimada no es válida (YYYY-MM-DD).';
     if (error) { errBox.textContent = error; return; }
 
@@ -1427,6 +1653,7 @@
       rutaONombre: ruta,
       descripcion: str(el.descripcion.value),
       estado: el.estado.value,
+      prioridad: el.prioridad.value,
       responsableFeature: str(el.responsableFeature.value),
       fechaEstimada: fecha,
     };
@@ -1726,6 +1953,12 @@
         lsSet(LS.view, state.view);
         renderAll();
         break;
+      case 'set-sort':
+        state.sort = SORT_MODES.includes(el.dataset.sortMode) ? el.dataset.sortMode : 'manual';
+        lsSet(LS.sort, state.sort);
+        renderAll();
+        announce(state.sort === 'manual' ? 'Orden manual. Podés arrastrar para reordenar.' : 'Ordenado por prioridad.');
+        break;
       case 'close-modal': {
         const dlg = el.closest('dialog');
         if (dlg) dlg.close();
@@ -1759,10 +1992,23 @@
     document.addEventListener('change', (ev) => {
       const sel = ev.target.closest('select[data-ep-status]');
       if (sel) setEndpointStatus(sel.dataset.apiId, sel.dataset.epId, sel.value);
+      const prio = ev.target.closest('select[data-prio]');
+      if (prio) setPrioridad(prio.dataset.apiId, prio.dataset.epId || '', prio.value);
     });
 
+    document.addEventListener('pointerdown', onDragStart);
+    document.addEventListener('pointermove', onDragMove);
+    document.addEventListener('pointerup', (ev) => onDragEnd(ev, false));
+    document.addEventListener('pointercancel', (ev) => onDragEnd(ev, true));
+
     document.addEventListener('keydown', (ev) => {
+      if (ev.target.closest && ev.target.closest('[data-drag-handle]')) onHandleKey(ev);
       if (ev.key === 'Escape') {
+        if (drag) {
+          ev.preventDefault();
+          onDragEnd(null, true);
+          return;
+        }
         if (state.pop) {
           ev.preventDefault();
           closeFilterPop(true);
@@ -1806,7 +2052,10 @@
     setOptions($('#api-estado'), ESTADOS_API);
     setOptions($('#ep-metodo'), METODOS);
     setOptions($('#ep-estado'), ESTADOS_EP);
+    setOptions($('#api-prioridad'), PRIORIDADES);
+    setOptions($('#ep-prioridad'), PRIORIDADES);
     state.view = lsGet(LS.view) === 'table' ? 'table' : 'cards';
+    state.sort = SORT_MODES.includes(lsGet(LS.sort)) ? lsGet(LS.sort) : 'manual';
     bindEvents();
     await loadInitial();
     renderAll();

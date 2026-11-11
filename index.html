@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Tablero de seguimiento del desarrollo de APIs de ACA">
   <title>ACA · Seguimiento de APIs</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23293380'/%3E%3Ctext x='32' y='42' font-family='Arial,sans-serif' font-size='24' font-weight='800' fill='%23fff' text-anchor='middle'%3EACA%3C/text%3E%3Ccircle cx='52' cy='50' r='5' fill='%23F18E1A'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" sizes="180x180" href="assets/logo-aca-isotipo.png">
+  <link rel="apple-touch-icon" href="assets/logo-aca-isotipo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap">
@@ -81,13 +82,18 @@
 
     <div class="list-header">
       <h2 id="list-title">APIs</h2>
+      <div class="list-tools">
+      <div id="list-sort"></div>
+      <span class="list-tools-sep" aria-hidden="true"></span>
       <div class="view-toggle" role="group" aria-label="Vista">
         <button type="button" class="btn btn-sm btn-ghost is-active" data-action="set-view" data-view="cards"><span class="ms" aria-hidden="true">grid_view</span>Tarjetas</button>
         <button type="button" class="btn btn-sm btn-ghost" data-action="set-view" data-view="table"><span class="ms" aria-hidden="true">table_rows</span>Tabla</button>
       </div>
+      </div>
     </div>
 
     <section id="api-list" aria-live="polite"></section>
+    <div id="sr-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   </main>
 
   <footer class="footer">
@@ -143,6 +149,11 @@
           <label for="api-fecha">Fecha estimada de entrega</label>
           <input id="api-fecha" name="fechaEstimadaEntrega" type="date">
         </div>
+        <div class="form-field">
+          <label for="api-prioridad">Prioridad *</label>
+          <select id="api-prioridad" name="prioridad" required></select>
+          <small>Usada al ordenar por prioridad (Alta → Media → Baja).</small>
+        </div>
         <p class="form-error form-full" id="form-api-error" role="alert"></p>
       </div>
       <footer class="modal-footer">
@@ -186,7 +197,11 @@
           <label for="ep-fecha">Fecha estimada</label>
           <input id="ep-fecha" name="fechaEstimada" type="date">
         </div>
-        <div class="form-field form-full">
+        <div class="form-field">
+          <label for="ep-prioridad">Prioridad *</label>
+          <select id="ep-prioridad" name="prioridad" required></select>
+        </div>
+        <div class="form-field">
           <label for="ep-resp">Responsable de la feature</label>
           <input id="ep-resp" name="responsableFeature" list="dl-responsables" placeholder="Vacío = hereda el responsable de la API" autocomplete="off">
         </div>

@@ -9,6 +9,7 @@ Dashboard web estático (HTML + CSS + JavaScript vanilla, sin build) para hacer 
 ├── index.html                    # Estructura de la SPA (tablero, filtros, modales)
 ├── styles.css                    # Estilos según el Design System Giro / BackOffice de ACA
 ├── app.js                        # Lógica: render, filtros, edición, GitHub API, import/export
+├── assets/                       # Logo Giro (header) e isotipo ACA (favicon)
 ├── data/
 │   └── apis.json                 # Fuente de verdad: catálogo y estado de las APIs
 ├── .nojekyll                     # Evita el procesamiento Jekyll en Pages
@@ -25,6 +26,9 @@ Dashboard web estático (HTML + CSS + JavaScript vanilla, sin build) para hacer 
   - Los filtros activos se muestran como chips (con ✕ para quitarlos de a uno); el ícono ⟳ de la barra o el tacho junto a los chips limpian todo. Los popovers se cierran con `Esc` o clic afuera.
 - **Vista de tarjetas o tabla** con contexto, responsable, etiquetas de desarrollos afectados, fecha estimada (resaltada si está vencida o próxima) y **barra de progreso** calculada automáticamente.
 - **Desglose por API** (botón *Ver desglose*): tabla de endpoints/features con método, ruta, responsable (hereda el de la API si está vacío), fecha y estado. El **estado se elige desde un desplegable** (coloreado según el estado): `Pendiente`, `En Progreso`, `En Test`, `Completado` o `Bloqueado`. El filtro **Estado** permite filtrar tanto por el estado de la API como por APIs que tengan endpoints/features en un estado dado (p. ej. *En Test*).
+- **Prioridad y orden**: cada API y cada endpoint/feature tiene una **prioridad** (`Alta`, `Media` o `Baja`) editable desde un desplegable en la tarjeta, la tabla, el desglose o el formulario. El selector **Ordenar** (en la lista y en el desglose) alterna entre:
+  - **Manual**: el orden que definís arrastrando el ícono ⠿ de cada tarjeta o fila (mouse o táctil) o, con el foco en ese ícono, con las flechas del teclado. Ese orden es el orden de los elementos dentro de `data/apis.json`, así que se guarda y publica como cualquier otro cambio.
+  - **Prioridad**: muestra primero las `Alta`, luego `Media` y `Baja`, respetando el orden manual dentro de cada nivel (no modifica el orden guardado).
 - **Alta, edición y eliminación** de APIs y endpoints mediante formularios con validación.
 - **Diseño alineado al manual de marca**: aunque es un sitio independiente, sigue los tokens y patrones del Design System *Giro / BackOffice* de ACA (navy `#293380` para acciones primarias y títulos, naranja `#F18E1A` solo para destacados, tipografía Gabarito, íconos Material Symbols Rounded, badges de estado suaves, tabs en píldora y controles de 32/40 px). Los tokens están al inicio de `styles.css`.
 
@@ -42,6 +46,7 @@ Dashboard web estático (HTML + CSS + JavaScript vanilla, sin build) para hacer 
       "responsable": { "nombre": "María Fernández", "rol": "Tech Lead · Equipo Logística" },
       "desarrolloAfectado": ["ERP SAP", "App Acopios Móvil"],
       "estadoGeneral": "En Desarrollo",        // Planificada | En Desarrollo | En QA / Testing | En Producción | Bloqueada
+      "prioridad": "Alta",                     // Alta | Media | Baja (si falta, se toma Media)
       "fechaEstimadaEntrega": "2026-12-15",    // YYYY-MM-DD
       "endpointsFeatures": [
         {
@@ -50,6 +55,7 @@ Dashboard web estático (HTML + CSS + JavaScript vanilla, sin build) para hacer 
           "rutaONombre": "/v1/acopios",
           "descripcion": "Qué resuelve",
           "estado": "Completado",              // Pendiente | En Progreso | En Test | Completado | Bloqueado
+          "prioridad": "Media",                // Alta | Media | Baja (si falta, se toma Media)
           "responsableFeature": "",            // vacío = hereda el responsable de la API
           "fechaEstimada": "2026-10-10"
         }
@@ -58,6 +64,8 @@ Dashboard web estático (HTML + CSS + JavaScript vanilla, sin build) para hacer 
   ]
 }
 ```
+
+El orden de `apis` y de cada `endpointsFeatures` es el **orden manual** del tablero.
 
 El progreso de cada API = endpoints `Completado` / total de endpoints (si no tiene endpoints: 100 % cuando está `En Producción`, 0 % en otro caso).
 
