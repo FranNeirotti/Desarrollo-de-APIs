@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-11T10:54:30.385Z",
+  "actualizado": "2026-11-11T14:51:17.365Z",
   "apis": [
     {
       "id": "peg-256",
@@ -33,7 +33,35 @@
       ],
       "estadoGeneral": "En Desarrollo",
       "fechaEstimadaEntrega": "2026-10-29",
-      "endpointsFeatures": []
+      "endpointsFeatures": [
+        {
+          "id": "peg-142-ep-01",
+          "metodo": "GET",
+          "rutaONombre": "Camiones en puertos",
+          "descripcion": "",
+          "estado": "Pendiente",
+          "responsableFeature": "",
+          "fechaEstimada": "2026-10-29"
+        },
+        {
+          "id": "peg-142-ep-02",
+          "metodo": "POST",
+          "rutaONombre": "Cambio de estado en puerto",
+          "descripcion": "Aprobar y rechazar pasar camiones a condicional o rechazado desde el portal, sin la necesidad de tener que hacerlo desde el sistema de pesaje",
+          "estado": "Pendiente",
+          "responsableFeature": "",
+          "fechaEstimada": "2026-10-29"
+        },
+        {
+          "id": "peg-142-ep-03",
+          "metodo": "GET",
+          "rutaONombre": "Estados en puerto",
+          "descripcion": "Todos los estados por los que pasa un camión en el puerto (dentro y fuera de calado)",
+          "estado": "Pendiente",
+          "responsableFeature": "",
+          "fechaEstimada": "2026-10-29"
+        }
+      ]
     },
     {
       "id": "ce-362",
