@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-11T10:18:21.512Z",
+  "actualizado": "2026-11-11T10:22:14.935Z",
   "apis": [
     {
       "id": "peg-256",
@@ -114,6 +114,23 @@
       ],
       "estadoGeneral": "En Desarrollo",
       "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
+    },
+    {
+      "id": "agn-906",
+      "nombre": "Aplicaciones (API descargas)",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "TACI",
+        "Backoffice",
+        "Agronegocios"
+      ],
+      "estadoGeneral": "En Desarrollo",
+      "fechaEstimadaEntrega": "2026-12-25",
       "endpointsFeatures": []
     }
   ]
