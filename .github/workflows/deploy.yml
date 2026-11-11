@@ -52,6 +52,7 @@ jobs:
           mkdir -p _site/data
           cp index.html styles.css app.js .nojekyll _site/
           cp data/apis.json _site/data/
+          cp -r assets _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
