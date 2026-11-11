@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-11T10:34:53.000Z",
+  "actualizado": "2026-11-11T10:38:57.735Z",
   "apis": [
     {
       "id": "peg-256",
@@ -32,7 +32,7 @@
         "B ackoffice"
       ],
       "estadoGeneral": "En Desarrollo",
-      "fechaEstimadaEntrega": "",
+      "fechaEstimadaEntrega": "2026-10-29",
       "endpointsFeatures": []
     },
     {
