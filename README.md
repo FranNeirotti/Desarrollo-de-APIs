@@ -18,7 +18,11 @@ Dashboard web estático (HTML + CSS + JavaScript vanilla, sin build) para hacer 
 ## ¿Cómo funciona el tablero?
 
 - **KPIs superiores**: total de APIs, % de avance global (endpoints/features completados sobre el total), endpoints completados vs. pendientes y **alertas** de entregas vencidas o próximas (≤ 14 días) de APIs y endpoints sin completar. Los KPIs se recalculan según los filtros activos.
-- **Búsqueda y filtros combinables**: texto libre (nombre, contexto, rutas, responsables…), **Responsable** (de la API o de alguna feature), **Desarrollo afectado**, **Estado** y **rango de fecha de entrega**.
+- **Búsqueda y filtros combinables** (patrón de filtros de Giro/BackOffice): a la izquierda, un buscador de texto libre (nombre, contexto, rutas, responsables…); a la derecha, botones de filtro que abren un popover:
+  - **Filtrar fecha**: rango de fecha de entrega con atajos (*Próximos/Últimos N días/semanas/meses*), calendario mensual navegable (clic en inicio y fin, o flechas del teclado) y campos *Desde*/*Hasta*; se confirma con *Aplicar filtro de fecha*.
+  - **Responsable** (de la API o de alguna feature) y **Desarrollo afectado**: lista con buscador y selección única.
+  - **Estado**: agrupado en *Estado de la API* y *Con endpoints / features en…*.
+  - Los filtros activos se muestran como chips (con ✕ para quitarlos de a uno); el ícono ⟳ de la barra o el tacho junto a los chips limpian todo. Los popovers se cierran con `Esc` o clic afuera.
 - **Vista de tarjetas o tabla** con contexto, responsable, etiquetas de desarrollos afectados, fecha estimada (resaltada si está vencida o próxima) y **barra de progreso** calculada automáticamente.
 - **Desglose por API** (botón *Ver desglose*): tabla de endpoints/features con método, ruta, responsable (hereda el de la API si está vacío), fecha y estado. El **estado se elige desde un desplegable** (coloreado según el estado): `Pendiente`, `En Progreso`, `En Test`, `Completado` o `Bloqueado`. El filtro **Estado** permite filtrar tanto por el estado de la API como por APIs que tengan endpoints/features en un estado dado (p. ej. *En Test*).
 - **Alta, edición y eliminación** de APIs y endpoints mediante formularios con validación.

@@ -56,35 +56,28 @@
       <div class="filters-row">
         <div class="filter-search">
           <span class="ms" aria-hidden="true">search</span>
-          <input id="f-search" type="search" placeholder="Buscar por nombre, contexto, endpoint o responsable…" aria-label="Buscar" autocomplete="off">
+          <input id="f-search" type="search" placeholder="Buscar API, endpoint…" aria-label="Buscar por API, endpoint, contexto o responsable" title="Busca en nombre, contexto, endpoints, responsables y desarrollos" autocomplete="off">
         </div>
-        <button class="btn btn-sm btn-ghost" id="btn-clear-filters" data-action="clear-filters" type="button" title="Limpiar filtros" aria-label="Limpiar filtros"><span class="ms" aria-hidden="true">filter_alt_off</span><span class="btn-label">Limpiar filtros</span><span class="filter-count" id="filter-count" hidden></span></button>
-      </div>
-      <div class="filters-row filters-row-groups">
-        <div class="filter-group" role="group" aria-label="Filtrar por">
-          <div class="filter-control">
-            <label for="f-responsable"><span class="ms" aria-hidden="true">person</span>Responsable</label>
-            <select id="f-responsable"><option value="">Todos</option></select>
-          </div>
-          <div class="filter-control">
-            <label for="f-desarrollo">Desarrollo</label>
-            <select id="f-desarrollo"><option value="">Todos</option></select>
-          </div>
-          <div class="filter-control">
-            <label for="f-estado">Estado</label>
-            <select id="f-estado"><option value="">Todos</option></select>
-          </div>
-        </div>
-        <div class="filter-group" role="group" aria-label="Rango de fecha de entrega">
-          <div class="filter-control filter-range">
-            <label for="f-desde"><span class="ms" aria-hidden="true">calendar_month</span>Entrega</label>
-            <input id="f-desde" type="date" aria-label="Entrega desde" title="Desde">
-            <span class="filter-range-sep" aria-hidden="true">a</span>
-            <input id="f-hasta" type="date" aria-label="Entrega hasta" title="Hasta">
-          </div>
+        <div class="filter-bar" role="toolbar" aria-label="Filtros">
+          <button type="button" class="filter-btn filter-btn-main" data-action="open-filter" data-filter="fecha" aria-haspopup="dialog" aria-expanded="false" aria-controls="filter-pop"><span class="ms" aria-hidden="true">filter_alt</span>Filtrar fecha</button>
+          <button type="button" class="filter-btn" data-action="open-filter" data-filter="responsable" aria-haspopup="dialog" aria-expanded="false" aria-controls="filter-pop">Responsable</button>
+          <button type="button" class="filter-btn" data-action="open-filter" data-filter="desarrollo" aria-haspopup="dialog" aria-expanded="false" aria-controls="filter-pop">Desarrollo afectado</button>
+          <button type="button" class="filter-btn" data-action="open-filter" data-filter="estado" aria-haspopup="dialog" aria-expanded="false" aria-controls="filter-pop">Estado</button>
+          <span class="filter-bar-sep" aria-hidden="true"></span>
+          <button type="button" class="filter-icon-btn" data-action="clear-filters" title="Restablecer filtros" aria-label="Restablecer filtros"><span class="ms" aria-hidden="true">autorenew</span></button>
         </div>
       </div>
+      <div class="filter-chips-row" id="filter-chips-row" hidden>
+        <ul class="filter-chips" id="filter-chips" aria-label="Filtros activos"></ul>
+        <button type="button" class="filter-icon-btn filter-clear-all" data-action="clear-filters" title="Quitar todos los filtros" aria-label="Quitar todos los filtros"><span class="ms" aria-hidden="true">delete</span></button>
+      </div>
+      <input type="hidden" id="f-responsable">
+      <input type="hidden" id="f-desarrollo">
+      <input type="hidden" id="f-estado">
+      <input type="hidden" id="f-desde">
+      <input type="hidden" id="f-hasta">
     </section>
+    <div class="filter-pop" id="filter-pop" role="dialog" aria-modal="false" hidden></div>
 
     <div class="list-header">
       <h2 id="list-title">APIs</h2>

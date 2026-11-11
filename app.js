@@ -32,6 +32,8 @@
     detailApiId: null,
     saving: false,
     loadError: null,
+    filterOpts: { responsable: [], desarrollo: [] },
+    pop: null,
   };
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -547,15 +549,6 @@
     return true;
   }
 
-  function fillSelect(select, values, placeholder) {
-    const current = select.value;
-    const list = sortEs(uniq(values.filter(Boolean)));
-    if (current && !list.includes(current)) list.unshift(current);
-    select.innerHTML = `<option value="">${esc(placeholder)}</option>` +
-      list.map((v) => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
-    select.value = current;
-  }
-
   function fillDatalist(el, values) {
     el.innerHTML = sortEs(uniq(values.filter(Boolean))).map((v) => `<option value="${esc(v)}"></option>`).join('');
   }
@@ -568,8 +561,10 @@
       responsables.push(...apiResponsables(a));
       desarrollos.push(...a.desarrolloAfectado);
     });
-    fillSelect($('#f-responsable'), responsables, 'Todos');
-    fillSelect($('#f-desarrollo'), desarrollos, 'Todos');
+    state.filterOpts = {
+      responsable: sortEs(uniq(responsables.filter(Boolean))),
+      desarrollo: sortEs(uniq(desarrollos.filter(Boolean))),
+    };
     fillDatalist($('#dl-responsables'), responsables);
     fillDatalist($('#dl-desarrollos'), desarrollos);
   }
@@ -811,18 +806,370 @@
     if (state.detailApiId && $('#modal-detail').open) renderDetail();
   }
 
+  // ---------------------------------------------------------------------------
+  // Barra de filtros (patrón Giro/BackOffice: botones de texto + popovers + chips)
+  // ---------------------------------------------------------------------------
+  const FILTER_DEFS = {
+    responsable: { label: 'Responsable', all: 'Todos los responsables', search: 'Buscar responsable o rol…' },
+    desarrollo: { label: 'Desarrollo afectado', all: 'Todos los desarrollos', search: 'Buscar desarrollo o sistema…' },
+    estado: { label: 'Estado', all: 'Todos los estados' },
+  };
+  const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const DIAS_SEMANA = ['lu', 'ma', 'mi', 'ju', 'vi', 'sá', 'do'];
+
+  function toISO(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function fmtShort(s) {
+    const d = parseDate(s);
+    return d ? d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+  }
+
+  function estadoLabel(v) {
+    return v.startsWith(EP_FILTER_PREFIX) ? `Endpoints: ${v.slice(EP_FILTER_PREFIX.length)}` : v;
+  }
+
   function syncFilterUi() {
-    let active = 0;
-    $$('.filters .filter-control').forEach((ctl) => {
-      const on = [...ctl.querySelectorAll('select, input')].some((el) => el.value !== '');
-      ctl.classList.toggle('is-active', on);
-      if (on) active += 1;
+    const f = getFilters();
+    $$('.filter-btn').forEach((b) => {
+      const key = b.dataset.filter;
+      b.classList.toggle('has-value', key === 'fecha' ? !!(f.desde || f.hasta) : !!f[key]);
     });
-    if ($('#f-search').value.trim()) active += 1;
-    const count = $('#filter-count');
-    count.hidden = active === 0;
-    count.textContent = String(active);
-    $('#btn-clear-filters').disabled = active === 0;
+    const chips = [];
+    if (f.desde || f.hasta) {
+      let text = `${fmtShort(f.desde)} – ${fmtShort(f.hasta)}`;
+      if (!f.hasta) text = `Desde ${fmtShort(f.desde)}`;
+      if (!f.desde) text = `Hasta ${fmtShort(f.hasta)}`;
+      chips.push({ key: 'fecha', name: 'Fecha de entrega', text });
+    }
+    ['responsable', 'desarrollo', 'estado'].forEach((k) => {
+      if (f[k]) chips.push({ key: k, name: FILTER_DEFS[k].label, text: k === 'estado' ? estadoLabel(f[k]) : f[k] });
+    });
+    $('#filter-chips').innerHTML = chips.map((c) => `
+      <li class="filter-chip" title="${esc(c.name)}: ${esc(c.text)}">
+        <span>${esc(c.text)}</span>
+        <button type="button" class="filter-chip-x" data-action="remove-filter" data-filter="${c.key}" aria-label="Quitar filtro ${esc(c.name)}: ${esc(c.text)}">${icn('close')}</button>
+      </li>`).join('');
+    $('#filter-chips-row').hidden = chips.length === 0;
+  }
+
+  function removeFilter(key) {
+    if (key === 'fecha') {
+      $('#f-desde').value = '';
+      $('#f-hasta').value = '';
+    } else if (FILTER_DEFS[key]) {
+      $(`#f-${key}`).value = '';
+    }
+    renderAll();
+    const btn = $(`.filter-btn[data-filter="${key}"]`);
+    if (btn) btn.focus();
+  }
+
+  function openFilterPop(btn) {
+    const key = btn.dataset.filter;
+    if (state.pop && state.pop.key === key) {
+      closeFilterPop(true);
+      return;
+    }
+    closeFilterPop(false);
+    const pop = $('#filter-pop');
+    state.pop = { key, btn };
+    if (key === 'fecha') {
+      const desde = $('#f-desde').value;
+      const hasta = $('#f-hasta').value;
+      const base = parseDate(desde) || parseDate(hasta) || today();
+      Object.assign(state.pop, {
+        desde, hasta, dir: 'next', n: 7, unit: 'd',
+        month: new Date(base.getFullYear(), base.getMonth(), 1),
+        focusDay: toISO(base),
+      });
+      pop.className = 'filter-pop filter-pop-date';
+      pop.setAttribute('aria-label', 'Filtrar por fecha de entrega');
+      renderDatePop();
+    } else {
+      pop.className = `filter-pop filter-pop-list${key === 'estado' ? ' is-simple' : ''}`;
+      pop.setAttribute('aria-label', `Filtrar por ${FILTER_DEFS[key].label.toLowerCase()}`);
+      renderListPop('');
+    }
+    pop.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    btn.classList.add('is-open');
+    positionFilterPop();
+    const first = pop.querySelector('.pop-search input') || pop.querySelector('.pop-opt.is-selected') ||
+      pop.querySelector('select, input, button');
+    if (first) first.focus();
+  }
+
+  function closeFilterPop(returnFocus) {
+    if (!state.pop) return;
+    const { btn } = state.pop;
+    state.pop = null;
+    const pop = $('#filter-pop');
+    pop.hidden = true;
+    pop.innerHTML = '';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.classList.remove('is-open');
+    if (returnFocus) btn.focus();
+  }
+
+  function positionFilterPop() {
+    if (!state.pop) return;
+    const pop = $('#filter-pop');
+    const r = state.pop.btn.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth;
+    const vh = window.innerHeight;
+    pop.style.maxWidth = `${vw - 16}px`;
+    const w = pop.offsetWidth;
+    let left = r.left;
+    if (left + w > vw - 8) left = vw - 8 - w;
+    pop.style.left = `${Math.max(8, left)}px`;
+    pop.style.top = `${r.bottom + 6}px`;
+    pop.style.maxHeight = `${Math.max(200, vh - r.bottom - 14)}px`;
+  }
+
+  function filterOptionGroups(key) {
+    if (key === 'estado') {
+      return [
+        { label: 'Estado de la API', items: ESTADOS_API.map((v) => ({ value: v, label: v })) },
+        { label: 'Con endpoints / features en…', items: ESTADOS_EP.map((v) => ({ value: EP_FILTER_PREFIX + v, label: v })) },
+      ];
+    }
+    return [{ items: (state.filterOpts[key] || []).map((v) => ({ value: v, label: v })) }];
+  }
+
+  function renderListPop(query) {
+    const key = state.pop.key;
+    const def = FILTER_DEFS[key];
+    const current = $(`#f-${key}`).value;
+    const q = fold(query.trim());
+    const opt = (o) => `
+      <button type="button" class="pop-opt${o.value === current ? ' is-selected' : ''}${o.value === '' ? ' is-all' : ''}" role="menuitemradio"
+        aria-checked="${o.value === current}" data-value="${esc(o.value)}" tabindex="-1">
+        <span class="pop-radio" aria-hidden="true"></span><span class="pop-opt-label">${esc(o.label)}</span>
+      </button>`;
+    let body = opt({ value: '', label: def.all });
+    let count = 0;
+    filterOptionGroups(key).forEach((g) => {
+      const items = q ? g.items.filter((o) => fold(o.label).includes(q)) : g.items;
+      count += items.length;
+      if (!items.length) return;
+      if (g.label) body += `<div class="pop-group" role="presentation">${esc(g.label)}</div>`;
+      body += items.map(opt).join('');
+    });
+    if (!count) body += '<p class="pop-empty">Sin resultados</p>';
+    const list = `<div class="pop-list" role="menu" aria-label="${esc(def.label)}">${body}</div>`;
+    const pop = $('#filter-pop');
+    if (def.search && pop.querySelector('.pop-list')) {
+      pop.querySelector('.pop-list').outerHTML = list;
+    } else {
+      pop.innerHTML = (def.search
+        ? `<div class="pop-search"><input type="search" placeholder="${esc(def.search)}" aria-label="${esc(def.search)}" autocomplete="off"></div>`
+        : '') + list;
+    }
+    const sel = pop.querySelector('.pop-opt.is-selected') || pop.querySelector('.pop-opt');
+    if (sel) sel.tabIndex = 0;
+  }
+
+  function pickFilterOption(value) {
+    const key = state.pop.key;
+    $(`#f-${key}`).value = value;
+    closeFilterPop(true);
+    renderAll();
+  }
+
+  function shiftDate(d, n, unit) {
+    if (unit === 'm') return new Date(d.getFullYear(), d.getMonth() + n, d.getDate());
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n * (unit === 'w' ? 7 : 1));
+  }
+
+  function renderDatePop() {
+    const p = state.pop;
+    const sel = (opts, cur) => opts.map(([v, l]) => `<option value="${v}"${v === cur ? ' selected' : ''}>${l}</option>`).join('');
+    $('#filter-pop').innerHTML = `
+      <div class="pop-presets">
+        <select data-preset="dir" aria-label="Rango rápido">${sel([['next', 'Próximos'], ['past', 'Últimos']], p.dir)}</select>
+        <input type="number" data-preset="n" min="1" max="999" value="${p.n}" aria-label="Cantidad">
+        <select data-preset="unit" aria-label="Unidad">${sel([['d', 'Día'], ['w', 'Semana'], ['m', 'Mes']], p.unit)}</select>
+      </div>
+      <div class="cal" id="pop-cal"></div>
+      <div class="pop-range">
+        <label>Desde<input type="date" data-range="desde" value="${esc(p.desde)}"></label>
+        <label>Hasta<input type="date" data-range="hasta" value="${esc(p.hasta)}"></label>
+      </div>
+      <div class="pop-foot">
+        <button type="button" class="pop-link" data-date-clear>Limpiar</button>
+        <button type="button" class="btn btn-success btn-sm" data-date-apply>Aplicar filtro de fecha</button>
+      </div>`;
+    renderCalendar();
+  }
+
+  function renderCalendar() {
+    const p = state.pop;
+    const m = p.month;
+    const offset = (m.getDay() + 6) % 7;
+    const todayIso = toISO(today());
+    const inMonth = (iso) => iso.slice(0, 7) === toISO(m).slice(0, 7);
+    if (!inMonth(p.focusDay)) p.focusDay = toISO(m);
+    let cells = '';
+    for (let i = 0; i < 42; i += 1) {
+      const d = new Date(m.getFullYear(), m.getMonth(), 1 - offset + i);
+      const iso = toISO(d);
+      const cls = ['cal-day'];
+      if (!inMonth(iso)) cls.push('is-out');
+      if (iso === todayIso) cls.push('is-today');
+      if (iso === p.desde) cls.push('is-start');
+      if (iso === p.hasta) cls.push('is-end');
+      if (p.desde && p.hasta && iso > p.desde && iso < p.hasta) cls.push('in-range');
+      const picked = iso === p.desde || iso === p.hasta;
+      const label = d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      cells += `<button type="button" class="${cls.join(' ')}" data-cal-day="${iso}" aria-label="${esc(label)}" aria-pressed="${picked}"
+        tabindex="${iso === p.focusDay ? 0 : -1}">${d.getDate()}</button>`;
+    }
+    $('#pop-cal').innerHTML = `
+      <div class="cal-head">
+        <span class="cal-title" aria-live="polite">${MESES[m.getMonth()]} ${m.getFullYear()}</span>
+        <button type="button" class="filter-icon-btn" data-cal-nav="-1" aria-label="Mes anterior">${icn('chevron_left')}</button>
+        <button type="button" class="filter-icon-btn" data-cal-nav="1" aria-label="Mes siguiente">${icn('chevron_right')}</button>
+      </div>
+      <div class="cal-grid" role="group" aria-label="${MESES[m.getMonth()]} ${m.getFullYear()}">
+        ${DIAS_SEMANA.map((d) => `<span class="cal-dow" aria-hidden="true">${d}</span>`).join('')}
+        ${cells}
+      </div>`;
+    const pop = $('#filter-pop');
+    pop.querySelector('[data-range="desde"]').value = p.desde;
+    pop.querySelector('[data-range="hasta"]').value = p.hasta;
+  }
+
+  function setCalMonth(d) {
+    state.pop.month = new Date(d.getFullYear(), d.getMonth(), 1);
+  }
+
+  function pickCalDay(iso) {
+    const p = state.pop;
+    if (!p.desde || p.hasta) {
+      p.desde = iso;
+      p.hasta = '';
+    } else if (iso < p.desde) {
+      p.hasta = p.desde;
+      p.desde = iso;
+    } else {
+      p.hasta = iso;
+    }
+    p.focusDay = iso;
+    setCalMonth(parseDate(iso));
+    renderCalendar();
+    const btn = $(`#pop-cal [data-cal-day="${iso}"]`);
+    if (btn) btn.focus();
+  }
+
+  function applyPreset() {
+    const p = state.pop;
+    const pop = $('#filter-pop');
+    p.dir = pop.querySelector('[data-preset="dir"]').value;
+    p.unit = pop.querySelector('[data-preset="unit"]').value;
+    p.n = Math.min(999, Math.max(1, parseInt(pop.querySelector('[data-preset="n"]').value, 10) || 1));
+    const t = today();
+    if (p.dir === 'past') {
+      p.desde = toISO(shiftDate(t, -p.n, p.unit));
+      p.hasta = toISO(t);
+      setCalMonth(t);
+    } else {
+      p.desde = toISO(t);
+      p.hasta = toISO(shiftDate(t, p.n, p.unit));
+      setCalMonth(t);
+    }
+    p.focusDay = toISO(t);
+    renderCalendar();
+  }
+
+  function bindFilterPop() {
+    const pop = $('#filter-pop');
+    pop.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      if (!state.pop) return;
+      const o = ev.target.closest('.pop-opt');
+      if (o) { pickFilterOption(o.dataset.value); return; }
+      const day = ev.target.closest('[data-cal-day]');
+      if (day) { pickCalDay(day.dataset.calDay); return; }
+      const nav = ev.target.closest('[data-cal-nav]');
+      if (nav) {
+        const m = state.pop.month;
+        setCalMonth(new Date(m.getFullYear(), m.getMonth() + Number(nav.dataset.calNav), 1));
+        renderCalendar();
+        const again = $(`#pop-cal [data-cal-nav="${nav.dataset.calNav}"]`);
+        if (again) again.focus();
+        return;
+      }
+      if (ev.target.closest('[data-date-clear]')) {
+        state.pop.desde = '';
+        state.pop.hasta = '';
+        renderCalendar();
+        return;
+      }
+      if (ev.target.closest('[data-date-apply]')) {
+        const { desde, hasta } = state.pop;
+        $('#f-desde').value = desde;
+        $('#f-hasta').value = hasta;
+        closeFilterPop(true);
+        renderAll();
+      }
+    });
+    pop.addEventListener('input', (ev) => {
+      if (state.pop && ev.target.closest('.pop-search')) renderListPop(ev.target.value);
+    });
+    pop.addEventListener('change', (ev) => {
+      if (!state.pop) return;
+      if (ev.target.dataset.preset) { applyPreset(); return; }
+      const which = ev.target.dataset.range;
+      if (which) {
+        const p = state.pop;
+        p[which] = parseDate(ev.target.value) ? ev.target.value : '';
+        if (p.desde && p.hasta && p.desde > p.hasta) [p.desde, p.hasta] = [p.hasta, p.desde];
+        const d = parseDate(p[which]);
+        if (d) { setCalMonth(d); p.focusDay = p[which]; }
+        renderCalendar();
+      }
+    });
+    pop.addEventListener('keydown', (ev) => {
+      if (!state.pop) return;
+      const opts = $$('.pop-opt', pop);
+      const inSearch = ev.target.closest('.pop-search');
+      if (opts.length && (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') && (inSearch || ev.target.closest('.pop-opt'))) {
+        ev.preventDefault();
+        let i = opts.indexOf(ev.target);
+        if (inSearch) i = ev.key === 'ArrowDown' ? 0 : opts.length - 1;
+        else i = (i + (ev.key === 'ArrowDown' ? 1 : -1) + opts.length) % opts.length;
+        opts.forEach((o) => { o.tabIndex = -1; });
+        opts[i].tabIndex = 0;
+        opts[i].focus();
+        return;
+      }
+      if (inSearch && ev.key === 'Enter') {
+        ev.preventDefault();
+        const firstMatch = opts.find((o) => !o.classList.contains('is-all'));
+        if (firstMatch) pickFilterOption(firstMatch.dataset.value);
+        return;
+      }
+      const day = ev.target.closest('[data-cal-day]');
+      const moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+      if (day && moves[ev.key] != null) {
+        ev.preventDefault();
+        const d = parseDate(day.dataset.calDay);
+        const next = new Date(d.getFullYear(), d.getMonth(), d.getDate() + moves[ev.key]);
+        state.pop.focusDay = toISO(next);
+        setCalMonth(next);
+        renderCalendar();
+        const btn = $(`#pop-cal [data-cal-day="${toISO(next)}"]`);
+        if (btn) btn.focus();
+      }
+    });
+    pop.addEventListener('focusout', (ev) => {
+      const to = ev.relatedTarget;
+      if (state.pop && to && !pop.contains(to) && to !== state.pop.btn) closeFilterPop(false);
+    });
+    window.addEventListener('resize', positionFilterPop);
+    window.addEventListener('scroll', positionFilterPop, true);
   }
 
   // ---------------------------------------------------------------------------
@@ -1368,9 +1715,12 @@
         toast('Token eliminado de este navegador.', 'success');
         break;
       case 'clear-filters':
+        closeFilterPop(false);
         ['#f-search', '#f-responsable', '#f-desarrollo', '#f-estado', '#f-desde', '#f-hasta'].forEach((s) => { $(s).value = ''; });
         renderAll();
         break;
+      case 'open-filter': openFilterPop(el); break;
+      case 'remove-filter': removeFilter(el.dataset.filter); break;
       case 'set-view':
         state.view = el.dataset.view === 'table' ? 'table' : 'cards';
         lsSet(LS.view, state.view);
@@ -1389,6 +1739,7 @@
 
   function bindEvents() {
     document.addEventListener('click', (ev) => {
+      if (state.pop && !ev.target.closest('#filter-pop, [data-action="open-filter"]')) closeFilterPop(false);
       const el = ev.target.closest('[data-action]');
       if (!el) {
         if (!ev.target.closest('.dropdown')) closeMenu();
@@ -1411,12 +1762,17 @@
     });
 
     document.addEventListener('keydown', (ev) => {
-      if (ev.key === 'Escape') closeMenu();
+      if (ev.key === 'Escape') {
+        if (state.pop) {
+          ev.preventDefault();
+          closeFilterPop(true);
+        }
+        closeMenu();
+      }
     });
+    bindFilterPop();
 
-    ['#f-search', '#f-responsable', '#f-desarrollo', '#f-estado', '#f-desde', '#f-hasta'].forEach((s) => {
-      $(s).addEventListener('input', renderAll);
-    });
+    $('#f-search').addEventListener('input', renderAll);
 
     $('#form-api').addEventListener('submit', submitApiForm);
     $('#form-endpoint').addEventListener('submit', submitEndpointForm);
@@ -1447,10 +1803,6 @@
   // Inicio
   // ---------------------------------------------------------------------------
   async function init() {
-    const fEstado = $('#f-estado');
-    fEstado.innerHTML = '<option value="">Todos</option>' +
-      `<optgroup label="Estado de la API">${ESTADOS_API.map((st) => `<option value="${esc(st)}">${esc(st)}</option>`).join('')}</optgroup>` +
-      `<optgroup label="Con endpoints / features en…">${ESTADOS_EP.map((st) => `<option value="${esc(EP_FILTER_PREFIX + st)}">${esc(st)}</option>`).join('')}</optgroup>`;
     setOptions($('#api-estado'), ESTADOS_API);
     setOptions($('#ep-metodo'), METODOS);
     setOptions($('#ep-estado'), ESTADOS_EP);
