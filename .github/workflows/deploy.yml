@@ -1,0 +1,60 @@
+name: Deploy dashboard a GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validar datos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar data/apis.json
+        run: |
+          node -e '
+            const fs = require("fs");
+            const data = JSON.parse(fs.readFileSync("data/apis.json", "utf8"));
+            const apis = Array.isArray(data) ? data : data.apis;
+            if (!Array.isArray(apis)) throw new Error("data/apis.json debe contener un arreglo \"apis\"");
+            const ids = new Set();
+            for (const a of apis) {
+              if (!a.id) throw new Error("API sin id");
+              if (ids.has(a.id)) throw new Error("ID de API duplicado: " + a.id);
+              ids.add(a.id);
+            }
+            console.log("OK: " + apis.length + " APIs válidas");
+          '
+      - name: Verificar sintaxis de app.js
+        run: node --check app.js
+
+  deploy:
+    name: Publicar en GitHub Pages
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar sitio
+        run: |
+          mkdir -p _site/data
+          cp index.html styles.css app.js .nojekyll _site/
+          cp data/apis.json _site/data/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

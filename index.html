@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tablero de seguimiento del desarrollo de APIs de ACA">
+  <title>ACA · Seguimiento de APIs</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%BE%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-logo" aria-hidden="true">ACA</span>
+      <div>
+        <h1>Seguimiento de APIs</h1>
+        <p class="brand-sub">Catálogo y tablero de desarrollo de APIs de ACA</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-primary" data-action="new-api" type="button">＋ Nueva API</button>
+      <button class="btn btn-success" data-action="save-repo" type="button">⬆ Guardar en Repositorio</button>
+      <div class="dropdown">
+        <button class="btn btn-ghost" data-action="toggle-menu" type="button" aria-haspopup="true" aria-expanded="false">⋯ Más</button>
+        <div class="dropdown-menu" id="more-menu" role="menu">
+          <button type="button" role="menuitem" data-action="export-json">⬇ Exportar JSON</button>
+          <button type="button" role="menuitem" data-action="import-json">⬆ Importar JSON</button>
+          <button type="button" role="menuitem" data-action="reload-remote">⟳ Recargar desde repositorio</button>
+          <button type="button" role="menuitem" data-action="open-settings">⚙ Configuración GitHub</button>
+        </div>
+      </div>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <div id="draft-banner" class="banner banner-warning" hidden>
+    <span id="draft-banner-text">Hay cambios locales sin publicar en el repositorio.</span>
+    <div class="banner-actions">
+      <button class="btn btn-sm btn-success" data-action="save-repo" type="button">Publicar ahora</button>
+      <button class="btn btn-sm btn-ghost" data-action="export-json" type="button">Exportar JSON</button>
+      <button class="btn btn-sm btn-ghost" data-action="discard-draft" type="button">Descartar borrador</button>
+    </div>
+  </div>
+
+  <main class="container">
+    <section class="kpis" id="kpis" aria-label="Indicadores"></section>
+
+    <section class="alerts" id="alerts" aria-label="Alertas de entregas"></section>
+
+    <section class="filters card" aria-label="Filtros">
+      <div class="filter-field filter-search">
+        <label for="f-search">Buscar</label>
+        <input id="f-search" type="search" placeholder="Nombre, contexto, endpoint, responsable…" autocomplete="off">
+      </div>
+      <div class="filter-field">
+        <label for="f-responsable">Responsable</label>
+        <select id="f-responsable"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-field">
+        <label for="f-desarrollo">Desarrollo afectado</label>
+        <select id="f-desarrollo"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-field">
+        <label for="f-estado">Estado</label>
+        <select id="f-estado"><option value="">Todos</option></select>
+      </div>
+      <div class="filter-field">
+        <label for="f-desde">Entrega desde</label>
+        <input id="f-desde" type="date">
+      </div>
+      <div class="filter-field">
+        <label for="f-hasta">Entrega hasta</label>
+        <input id="f-hasta" type="date">
+      </div>
+      <div class="filter-field filter-actions">
+        <button class="btn btn-ghost" data-action="clear-filters" type="button">Limpiar filtros</button>
+      </div>
+    </section>
+
+    <div class="list-header">
+      <h2 id="list-title">APIs</h2>
+      <div class="view-toggle" role="group" aria-label="Vista">
+        <button type="button" class="btn btn-sm btn-ghost is-active" data-action="set-view" data-view="cards">Tarjetas</button>
+        <button type="button" class="btn btn-sm btn-ghost" data-action="set-view" data-view="table">Tabla</button>
+      </div>
+    </div>
+
+    <section id="api-list" aria-live="polite"></section>
+  </main>
+
+  <footer class="footer">
+    <span id="source-info">Cargando datos…</span>
+    <span>Datos versionados en <code>data/apis.json</code></span>
+  </footer>
+
+  <!-- Modal: detalle / desglose de una API -->
+  <dialog id="modal-detail" class="modal modal-lg">
+    <div class="modal-content" id="detail-content"></div>
+  </dialog>
+
+  <!-- Modal: alta / edición de API -->
+  <dialog id="modal-api" class="modal">
+    <form id="form-api" class="modal-content" novalidate>
+      <header class="modal-header">
+        <h3 id="form-api-title">Nueva API</h3>
+        <button type="button" class="icon-btn" data-action="close-modal" aria-label="Cerrar">✕</button>
+      </header>
+      <div class="modal-body form-grid">
+        <input type="hidden" name="originalId">
+        <div class="form-field">
+          <label for="api-id">ID *</label>
+          <input id="api-id" name="id" required placeholder="api-logistica-01" autocomplete="off">
+          <small>Minúsculas, números, puntos y guiones. Debe ser único.</small>
+        </div>
+        <div class="form-field">
+          <label for="api-nombre">Nombre *</label>
+          <input id="api-nombre" name="nombre" required placeholder="API de Logística">
+        </div>
+        <div class="form-field form-full">
+          <label for="api-contexto">Contexto</label>
+          <textarea id="api-contexto" name="contexto" rows="4" placeholder="Propósito funcional y técnico de la API dentro de ACA"></textarea>
+        </div>
+        <div class="form-field">
+          <label for="api-resp-nombre">Responsable *</label>
+          <input id="api-resp-nombre" name="responsableNombre" required placeholder="Nombre y apellido" list="dl-responsables" autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label for="api-resp-rol">Rol / Equipo</label>
+          <input id="api-resp-rol" name="responsableRol" placeholder="Tech Lead · Equipo Logística">
+        </div>
+        <div class="form-field form-full">
+          <label for="api-desarrollo">Desarrollo afectado</label>
+          <input id="api-desarrollo" name="desarrolloAfectado" placeholder="ERP SAP, Portal de Productores, App Móvil" list="dl-desarrollos" autocomplete="off">
+          <small>Separá múltiples etiquetas con comas.</small>
+        </div>
+        <div class="form-field">
+          <label for="api-estado">Estado general *</label>
+          <select id="api-estado" name="estadoGeneral" required></select>
+        </div>
+        <div class="form-field">
+          <label for="api-fecha">Fecha estimada de entrega</label>
+          <input id="api-fecha" name="fechaEstimadaEntrega" type="date">
+        </div>
+        <p class="form-error form-full" id="form-api-error" role="alert"></p>
+      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Modal: alta / edición de endpoint/feature -->
+  <dialog id="modal-endpoint" class="modal">
+    <form id="form-endpoint" class="modal-content" novalidate>
+      <header class="modal-header">
+        <h3 id="form-endpoint-title">Nuevo endpoint / feature</h3>
+        <button type="button" class="icon-btn" data-action="close-modal" aria-label="Cerrar">✕</button>
+      </header>
+      <div class="modal-body form-grid">
+        <input type="hidden" name="apiId">
+        <input type="hidden" name="originalId">
+        <div class="form-field">
+          <label for="ep-id">ID *</label>
+          <input id="ep-id" name="id" required placeholder="log-ep-06" autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label for="ep-metodo">Método *</label>
+          <select id="ep-metodo" name="metodo" required></select>
+        </div>
+        <div class="form-field form-full">
+          <label for="ep-ruta">Ruta o nombre *</label>
+          <input id="ep-ruta" name="rutaONombre" required placeholder="/v1/acopios/{id}">
+        </div>
+        <div class="form-field form-full">
+          <label for="ep-desc">Descripción</label>
+          <textarea id="ep-desc" name="descripcion" rows="3" placeholder="Qué resuelve este endpoint o feature"></textarea>
+        </div>
+        <div class="form-field">
+          <label for="ep-estado">Estado *</label>
+          <select id="ep-estado" name="estado" required></select>
+        </div>
+        <div class="form-field">
+          <label for="ep-fecha">Fecha estimada</label>
+          <input id="ep-fecha" name="fechaEstimada" type="date">
+        </div>
+        <div class="form-field form-full">
+          <label for="ep-resp">Responsable de la feature</label>
+          <input id="ep-resp" name="responsableFeature" list="dl-responsables" placeholder="Vacío = hereda el responsable de la API" autocomplete="off">
+        </div>
+        <p class="form-error form-full" id="form-endpoint-error" role="alert"></p>
+      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Modal: configuración GitHub -->
+  <dialog id="modal-settings" class="modal">
+    <form id="form-settings" class="modal-content" novalidate>
+      <header class="modal-header">
+        <h3>Configuración de GitHub</h3>
+        <button type="button" class="icon-btn" data-action="close-modal" aria-label="Cerrar">✕</button>
+      </header>
+      <div class="modal-body form-grid">
+        <p class="form-full muted">
+          Para publicar cambios directamente en el repositorio necesitás un
+          <strong>Personal Access Token</strong> con permiso <em>Contents: Read and write</em> sobre este repositorio.
+          El token se guarda <strong>solo en el localStorage de este navegador</strong> y únicamente se envía a <code>api.github.com</code>.
+        </p>
+        <div class="form-field">
+          <label for="gh-owner">Owner (usuario u organización) *</label>
+          <input id="gh-owner" name="owner" required placeholder="mi-organizacion" autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label for="gh-repo">Repositorio *</label>
+          <input id="gh-repo" name="repo" required placeholder="Desarrollo-de-APIs" autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label for="gh-branch">Rama *</label>
+          <input id="gh-branch" name="branch" required placeholder="main" autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label for="gh-path">Ruta del archivo *</label>
+          <input id="gh-path" name="path" required placeholder="data/apis.json" autocomplete="off">
+        </div>
+        <div class="form-field form-full">
+          <label for="gh-token">Personal Access Token</label>
+          <input id="gh-token" name="token" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+          <small>Fine-grained token recomendado. Dejalo vacío para usar solo el modo local / exportación.</small>
+        </div>
+        <p class="form-full muted" id="gh-detected"></p>
+        <p class="form-error form-full" id="form-settings-error" role="alert"></p>
+      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn btn-danger-ghost" data-action="forget-token">Olvidar token</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-ghost" data-action="test-connection">Probar conexión</button>
+        <button type="submit" class="btn btn-primary">Guardar configuración</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Modal: confirmación genérica -->
+  <dialog id="modal-confirm" class="modal modal-sm">
+    <form method="dialog" class="modal-content">
+      <header class="modal-header"><h3 id="confirm-title">Confirmar</h3></header>
+      <div class="modal-body"><p id="confirm-message"></p></div>
+      <footer class="modal-footer">
+        <button value="cancel" class="btn btn-ghost">Cancelar</button>
+        <button value="ok" class="btn btn-danger" id="confirm-ok">Confirmar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <datalist id="dl-responsables"></datalist>
+  <datalist id="dl-desarrollos"></datalist>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

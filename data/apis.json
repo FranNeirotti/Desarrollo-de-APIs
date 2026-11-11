@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "actualizado": "2026-11-10T22:00:00.000Z",
+  "apis": [
+    {
+      "id": "api-logistica-01",
+      "nombre": "API de Logística y Acopios",
+      "contexto": "Centraliza la gestión de ingresos, egresos y stock de granos en las plantas de acopio de ACA. Expone servicios REST para registrar descargas de camiones y consultar existencias por planta y producto, y emite eventos asíncronos hacia el ERP cuando se confirma una pesada. Construida en .NET 8 sobre Azure API Management, con autenticación OAuth2 (client credentials).",
+      "responsable": {
+        "nombre": "María Fernández",
+        "rol": "Tech Lead · Equipo Logística"
+      },
+      "desarrolloAfectado": ["ERP SAP", "App Acopios Móvil", "Portal de Productores", "Balanzas"],
+      "estadoGeneral": "En Desarrollo",
+      "fechaEstimadaEntrega": "2026-12-15",
+      "endpointsFeatures": [
+        {
+          "id": "log-ep-01",
+          "metodo": "GET",
+          "rutaONombre": "/v1/acopios",
+          "descripcion": "Lista las plantas de acopio activas con capacidad y ubicación.",
+          "estado": "Completado",
+          "responsableFeature": "",
+          "fechaEstimada": "2026-10-10"
+        },
+        {
+          "id": "log-ep-02",
+          "metodo": "GET",
+          "rutaONombre": "/v1/acopios/{id}/stock",
+          "descripcion": "Devuelve el stock por producto y calidad de una planta de acopio.",
+          "estado": "Completado",
+          "responsableFeature": "Lucas Gómez",
+          "fechaEstimada": "2026-10-25"
+        },
+        {
+          "id": "log-ep-03",
+          "metodo": "POST",
+          "rutaONombre": "/v1/acopios/{id}/descargas",
+          "descripcion": "Registra la descarga de un camión con datos de carta de porte y pesada bruta.",
+          "estado": "En Progreso",
+          "responsableFeature": "Lucas Gómez",
+          "fechaEstimada": "2026-11-20"
+        },
+        {
+          "id": "log-ep-04",
+          "metodo": "EVENT/ASYNC",
+          "rutaONombre": "acopio.pesada.confirmada",
+          "descripcion": "Evento publicado en Service Bus cuando una pesada queda confirmada; lo consume el ERP.",
+          "estado": "Pendiente",
+          "responsableFeature": "",
+          "fechaEstimada": "2026-12-05"
+        },
+        {
+          "id": "log-ep-05",
+          "metodo": "PATCH",
+          "rutaONombre": "/v1/descargas/{id}/calidad",
+          "descripcion": "Actualiza el análisis de calidad (humedad, materia extraña) de una descarga.",
+          "estado": "Pendiente",
+          "responsableFeature": "Sofía Ramírez",
+          "fechaEstimada": "2026-12-10"
+        }
+      ]
+    },
+    {
+      "id": "api-comercial-02",
+      "nombre": "API Comercial de Contratos de Granos",
+      "contexto": "Permite a los sistemas comerciales de ACA y a las cooperativas adheridas consultar y gestionar contratos de compraventa de granos, fijaciones de precio y liquidaciones. Integra cotizaciones de mercado y valida reglas fiscales contra ARCA. Implementada en Java Spring Boot detrás del API Gateway corporativo.",
+      "responsable": {
+        "nombre": "Juan Pérez",
+        "rol": "Arquitecto de Integraciones · Equipo Comercial"
+      },
+      "desarrolloAfectado": ["ERP SAP", "Portal de Cooperativas", "CRM Comercial", "Data Lake"],
+      "estadoGeneral": "En QA / Testing",
+      "fechaEstimadaEntrega": "2026-11-18",
+      "endpointsFeatures": [
+        {
+          "id": "com-ep-01",
+          "metodo": "GET",
+          "rutaONombre": "/v1/contratos",
+          "descripcion": "Búsqueda paginada de contratos por cooperativa, campaña y producto.",
+          "estado": "Completado",
+          "responsableFeature": "",
+          "fechaEstimada": "2026-09-30"
+        },
+        {
+          "id": "com-ep-02",
+          "metodo": "POST",
+          "rutaONombre": "/v1/contratos/{id}/fijaciones",
+          "descripcion": "Registra una fijación de precio parcial o total sobre un contrato.",
+          "estado": "Completado",
+          "responsableFeature": "Valentina Torres",
+          "fechaEstimada": "2026-10-20"
+        },
+        {
+          "id": "com-ep-03",
+          "metodo": "GET",
+          "rutaONombre": "/v1/liquidaciones/{id}",
+          "descripcion": "Obtiene el detalle de una liquidación con retenciones y percepciones.",
+          "estado": "En Progreso",
+          "responsableFeature": "Valentina Torres",
+          "fechaEstimada": "2026-11-08"
+        },
+        {
+          "id": "com-ep-04",
+          "metodo": "FEATURE",
+          "rutaONombre": "Validación de CUIT contra padrón ARCA",
+          "descripcion": "Validación en línea del CUIT del productor antes de emitir la liquidación.",
+          "estado": "Completado",
+          "responsableFeature": "",
+          "fechaEstimada": "2026-10-31"
+        }
+      ]
+    },
+    {
+      "id": "api-insumos-03",
+      "nombre": "API de Insumos Agropecuarios",
+      "contexto": "Catálogo y gestión de pedidos de insumos (semillas, fertilizantes, agroquímicos) para las cooperativas. Expone precios por lista, disponibilidad en centros de distribución y seguimiento de pedidos. Prevista en Node.js (NestJS) con caché Redis y publicación en el portal de desarrolladores de ACA. Bloqueada a la espera de la definición del maestro de stock por centro de distribución.",
+      "responsable": {
+        "nombre": "Carolina Díaz",
+        "rol": "Product Owner · Equipo Insumos"
+      },
+      "desarrolloAfectado": ["E-commerce de Insumos", "Portal de Cooperativas", "ERP SAP"],
+      "estadoGeneral": "Bloqueada",
+      "fechaEstimadaEntrega": "2027-02-28",
+      "endpointsFeatures": [
+        {
+          "id": "ins-ep-01",
+          "metodo": "GET",
+          "rutaONombre": "/v1/insumos",
+          "descripcion": "Catálogo de insumos con filtros por rubro, marca y campaña.",
+          "estado": "En Progreso",
+          "responsableFeature": "Martín López",
+          "fechaEstimada": "2026-12-20"
+        },
+        {
+          "id": "ins-ep-02",
+          "metodo": "GET",
+          "rutaONombre": "/v1/insumos/{sku}/disponibilidad",
+          "descripcion": "Stock disponible por centro de distribución para un SKU.",
+          "estado": "Bloqueado",
+          "responsableFeature": "",
+          "fechaEstimada": "2027-01-15"
+        },
+        {
+          "id": "ins-ep-03",
+          "metodo": "POST",
+          "rutaONombre": "/v1/pedidos",
+          "descripcion": "Alta de un pedido de insumos de una cooperativa con validación de crédito.",
+          "estado": "Pendiente",
+          "responsableFeature": "Martín López",
+          "fechaEstimada": "2027-02-10"
+        },
+        {
+          "id": "ins-ep-04",
+          "metodo": "DELETE",
+          "rutaONombre": "/v1/pedidos/{id}",
+          "descripcion": "Anulación de un pedido aún no despachado.",
+          "estado": "Pendiente",
+          "responsableFeature": "",
+          "fechaEstimada": "2027-02-20"
+        }
+      ]
+    }
+  ]
+}
