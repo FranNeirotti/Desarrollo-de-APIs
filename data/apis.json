@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-11T10:38:57.735Z",
+  "actualizado": "2026-11-11T10:44:10.054Z",
   "apis": [
     {
       "id": "peg-256",
@@ -387,8 +387,8 @@
         {
           "id": "agn-906-ep-29",
           "metodo": "GET",
-          "rutaONombre": "GET exclusión",
-          "descripcion": "El flag de excluido llega en la API de contratos y es filtrable.\nPendiente: pedido, esperando entrega.",
+          "rutaONombre": "GET descargas (lista total)",
+          "descripcion": "El flag de excluido llega en la API de contratos y es filtrable.\nSe espera que la API devuelva el total de las descargas (las controladas y no por CyE con la posibilidad de filtrar internamente). Actualmente solo trae las ya controladas.\nPendiente: pedido, esperando entrega.",
           "estado": "Pendiente",
           "responsableFeature": "",
           "fechaEstimada": ""
