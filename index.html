@@ -53,33 +53,36 @@
     <section class="alerts" id="alerts" aria-label="Alertas de entregas"></section>
 
     <section class="filters card" aria-label="Filtros">
-      <div class="filter-field filter-search">
-        <label for="f-search">Buscar</label>
-        <span class="ms" aria-hidden="true">search</span>
-        <input id="f-search" type="search" placeholder="Nombre, contexto, endpoint, responsable…" autocomplete="off">
+      <div class="filters-row">
+        <div class="filter-search">
+          <span class="ms" aria-hidden="true">search</span>
+          <input id="f-search" type="search" placeholder="Buscar por nombre, contexto, endpoint o responsable…" aria-label="Buscar" autocomplete="off">
+        </div>
+        <button class="btn btn-sm btn-ghost" id="btn-clear-filters" data-action="clear-filters" type="button" title="Limpiar filtros" aria-label="Limpiar filtros"><span class="ms" aria-hidden="true">filter_alt_off</span><span class="btn-label">Limpiar filtros</span><span class="filter-count" id="filter-count" hidden></span></button>
       </div>
-      <div class="filter-field">
-        <label for="f-responsable">Responsable</label>
-        <select id="f-responsable"><option value="">Todos</option></select>
-      </div>
-      <div class="filter-field">
-        <label for="f-desarrollo">Desarrollo afectado</label>
-        <select id="f-desarrollo"><option value="">Todos</option></select>
-      </div>
-      <div class="filter-field">
-        <label for="f-estado">Estado</label>
-        <select id="f-estado"><option value="">Todos</option></select>
-      </div>
-      <div class="filter-field">
-        <label for="f-desde">Entrega desde</label>
-        <input id="f-desde" type="date">
-      </div>
-      <div class="filter-field">
-        <label for="f-hasta">Entrega hasta</label>
-        <input id="f-hasta" type="date">
-      </div>
-      <div class="filter-field filter-actions">
-        <button class="btn btn-sm btn-ghost" data-action="clear-filters" type="button"><span class="ms" aria-hidden="true">filter_alt_off</span>Limpiar filtros</button>
+      <div class="filters-row filters-row-groups">
+        <div class="filter-group" role="group" aria-label="Filtrar por">
+          <div class="filter-control">
+            <label for="f-responsable"><span class="ms" aria-hidden="true">person</span>Responsable</label>
+            <select id="f-responsable"><option value="">Todos</option></select>
+          </div>
+          <div class="filter-control">
+            <label for="f-desarrollo">Desarrollo</label>
+            <select id="f-desarrollo"><option value="">Todos</option></select>
+          </div>
+          <div class="filter-control">
+            <label for="f-estado">Estado</label>
+            <select id="f-estado"><option value="">Todos</option></select>
+          </div>
+        </div>
+        <div class="filter-group" role="group" aria-label="Rango de fecha de entrega">
+          <div class="filter-control filter-range">
+            <label for="f-desde"><span class="ms" aria-hidden="true">calendar_month</span>Entrega</label>
+            <input id="f-desde" type="date" aria-label="Entrega desde" title="Desde">
+            <span class="filter-range-sep" aria-hidden="true">a</span>
+            <input id="f-hasta" type="date" aria-label="Entrega hasta" title="Hasta">
+          </div>
+        </div>
       </div>
     </section>
 

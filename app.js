@@ -807,7 +807,22 @@
     renderAlerts(alerts);
     renderList(apis);
     renderStatus();
+    syncFilterUi();
     if (state.detailApiId && $('#modal-detail').open) renderDetail();
+  }
+
+  function syncFilterUi() {
+    let active = 0;
+    $$('.filters .filter-control').forEach((ctl) => {
+      const on = [...ctl.querySelectorAll('select, input')].some((el) => el.value !== '');
+      ctl.classList.toggle('is-active', on);
+      if (on) active += 1;
+    });
+    if ($('#f-search').value.trim()) active += 1;
+    const count = $('#filter-count');
+    count.hidden = active === 0;
+    count.textContent = String(active);
+    $('#btn-clear-filters').disabled = active === 0;
   }
 
   // ---------------------------------------------------------------------------
