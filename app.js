@@ -9,7 +9,8 @@
   // Constantes
   // ---------------------------------------------------------------------------
   const ESTADOS_API = ['Planificada', 'En Desarrollo', 'En QA / Testing', 'En Producción', 'Bloqueada'];
-  const ESTADOS_EP = ['Pendiente', 'En Progreso', 'Completado', 'Bloqueado'];
+  const ESTADOS_EP = ['Pendiente', 'En Progreso', 'En Test', 'Completado', 'Bloqueado'];
+  const EP_FILTER_PREFIX = 'ep:';
   const METODOS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'EVENT/ASYNC', 'FEATURE'];
   const DIAS_PROXIMA = 14;
   const DATA_URL = 'data/apis.json';
@@ -248,6 +249,7 @@
       done,
       pending: total - done,
       inProgress: count('En Progreso'),
+      testing: count('En Test'),
       blocked: count('Bloqueado'),
       pct,
     };
@@ -523,7 +525,14 @@
   function matchesFilters(api, f) {
     if (f.responsable && !apiResponsables(api).includes(f.responsable)) return false;
     if (f.desarrollo && !api.desarrolloAfectado.includes(f.desarrollo)) return false;
-    if (f.estado && api.estadoGeneral !== f.estado) return false;
+    if (f.estado) {
+      if (f.estado.startsWith(EP_FILTER_PREFIX)) {
+        const epEstado = f.estado.slice(EP_FILTER_PREFIX.length);
+        if (!api.endpointsFeatures.some((e) => e.estado === epEstado)) return false;
+      } else if (api.estadoGeneral !== f.estado) {
+        return false;
+      }
+    }
     if (f.desde || f.hasta) {
       const fecha = api.fechaEstimadaEntrega;
       if (!fecha) return false;
@@ -616,12 +625,14 @@
     let epTotal = 0;
     let epDone = 0;
     let epProg = 0;
+    let epTest = 0;
     let epBlock = 0;
     apis.forEach((a) => {
       const s = apiStats(a);
       epTotal += s.total;
       epDone += s.done;
       epProg += s.inProgress;
+      epTest += s.testing;
       epBlock += s.blocked;
     });
     const pct = epTotal ? Math.round((epDone * 100) / epTotal) : 0;
@@ -646,7 +657,7 @@
       <article class="kpi kpi-endpoints">
         <div class="kpi-label">Endpoints / features</div>
         <div class="kpi-value">${epDone} <small class="muted">completados</small></div>
-        <div class="kpi-sub">${epTotal - epDone} pendientes de ${epTotal} · ${epProg} en progreso · ${epBlock} bloqueados</div>
+        <div class="kpi-sub">${epTotal - epDone} pendientes de ${epTotal} · ${epProg} en progreso · ${epTest} en test · ${epBlock} bloqueados</div>
       </article>
       <article class="kpi kpi-alert">
         <div class="kpi-label">Alertas de entrega</div>
@@ -820,7 +831,6 @@
     const s = apiStats(api);
     const apiDone = api.estadoGeneral === 'En Producción';
     const rows = api.endpointsFeatures.map((e) => {
-      const next = ESTADOS_EP[(ESTADOS_EP.indexOf(e.estado) + 1) % ESTADOS_EP.length];
       return `
         <tr>
           <td>${methodTag(e.metodo)}</td>
@@ -832,8 +842,10 @@
           <td>${e.responsableFeature ? esc(e.responsableFeature) : `<span class="inherited" title="Hereda el responsable de la API">${esc(api.responsable.nombre || '—')}</span>`}</td>
           <td>${dateChip(e.fechaEstimada, e.estado === 'Completado')}</td>
           <td>
-            <button type="button" class="badge badge-${slug(e.estado)}" data-action="cycle-ep" data-api-id="${esc(api.id)}" data-ep-id="${esc(e.id)}"
-              title="Clic para cambiar a “${esc(next)}”">${esc(e.estado)} ${icn('sync')}</button>
+            <select class="status-select status-${slug(e.estado)}" data-ep-status data-api-id="${esc(api.id)}" data-ep-id="${esc(e.id)}"
+              aria-label="Estado de ${esc(e.rutaONombre)}" title="Cambiar estado">
+              ${ESTADOS_EP.map((st) => `<option value="${esc(st)}"${st === e.estado ? ' selected' : ''}>${esc(st)}</option>`).join('')}
+            </select>
           </td>
           <td class="cell-actions">
             <button type="button" class="icon-btn" title="Editar" aria-label="Editar endpoint" data-action="edit-ep" data-api-id="${esc(api.id)}" data-ep-id="${esc(e.id)}">${icn('edit')}</button>
@@ -878,7 +890,7 @@
               <tbody>${rows}</tbody>
             </table>
           </div>
-          <p class="hint">${icn('info')}Hacé clic en el estado para pasar al siguiente (Pendiente → En Progreso → Completado → Bloqueado). Los cambios se guardan como borrador local hasta que los publiques.</p>`
+          <p class="hint">${icn('info')}Elegí el estado de cada endpoint/feature desde su desplegable (Pendiente, En Progreso, En Test, Completado, Bloqueado). Los cambios se guardan como borrador local hasta que los publiques.</p>`
         : '<div class="empty">Esta API todavía no tiene endpoints ni features cargados.</div>'}
       </div>
       <footer class="modal-footer">
@@ -889,11 +901,11 @@
       </footer>`;
   }
 
-  function cycleEndpoint(apiId, epId) {
+  function setEndpointStatus(apiId, epId, estado) {
     const api = findApi(apiId);
     const ep = api && api.endpointsFeatures.find((e) => e.id === epId);
-    if (!ep) return;
-    ep.estado = ESTADOS_EP[(ESTADOS_EP.indexOf(ep.estado) + 1) % ESTADOS_EP.length];
+    if (!ep || !ESTADOS_EP.includes(estado) || ep.estado === estado) return;
+    ep.estado = estado;
     commit();
     toast(`"${ep.rutaONombre}" → ${ep.estado}`, 'success');
   }
@@ -1328,7 +1340,6 @@
       case 'new-ep': openEndpointForm(apiId, null); break;
       case 'edit-ep': openEndpointForm(apiId, epId); break;
       case 'delete-ep': deleteEndpoint(apiId, epId); break;
-      case 'cycle-ep': cycleEndpoint(apiId, epId); break;
       case 'save-repo': saveToRepo(); break;
       case 'export-json': exportJson(); break;
       case 'import-json': $('#import-file').click(); break;
@@ -1379,6 +1390,11 @@
     });
     $('#modal-detail').addEventListener('close', () => { state.detailApiId = null; });
 
+    document.addEventListener('change', (ev) => {
+      const sel = ev.target.closest('select[data-ep-status]');
+      if (sel) setEndpointStatus(sel.dataset.apiId, sel.dataset.epId, sel.value);
+    });
+
     document.addEventListener('keydown', (ev) => {
       if (ev.key === 'Escape') closeMenu();
     });
@@ -1416,8 +1432,10 @@
   // Inicio
   // ---------------------------------------------------------------------------
   async function init() {
-    setOptions($('#f-estado'), ['', ...ESTADOS_API]);
-    $('#f-estado').options[0].textContent = 'Todos';
+    const fEstado = $('#f-estado');
+    fEstado.innerHTML = '<option value="">Todos</option>' +
+      `<optgroup label="Estado de la API">${ESTADOS_API.map((st) => `<option value="${esc(st)}">${esc(st)}</option>`).join('')}</optgroup>` +
+      `<optgroup label="Con endpoints / features en…">${ESTADOS_EP.map((st) => `<option value="${esc(EP_FILTER_PREFIX + st)}">${esc(st)}</option>`).join('')}</optgroup>`;
     setOptions($('#api-estado'), ESTADOS_API);
     setOptions($('#ep-metodo'), METODOS);
     setOptions($('#ep-estado'), ESTADOS_EP);

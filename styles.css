@@ -489,7 +489,7 @@ input::placeholder, textarea::placeholder { color: var(--fg-4); }
 input:hover, select:hover, textarea:hover { border-color: var(--border-subtle); }
 input:focus, select:focus, textarea:focus {
   outline: none;
-  background: var(--bg-surface);
+  background-color: var(--bg-surface);
   border-color: var(--border-focus);
   box-shadow: var(--sombra-focus);
 }
@@ -622,7 +622,7 @@ input[type="date"] { cursor: text; }
 }
 .badge-planificada, .badge-pendiente { background: var(--primario-100); color: var(--primario-800); }
 .badge-en-desarrollo, .badge-en-progreso { background: var(--info-bg); color: var(--info-fg); }
-.badge-en-qa-testing { background: var(--warning-bg); color: var(--warning-fg); }
+.badge-en-qa-testing, .badge-en-test { background: var(--warning-bg); color: var(--warning-fg); }
 .badge-en-produccion, .badge-completado { background: var(--success-bg); color: var(--success-fg); }
 .badge-bloqueada, .badge-bloqueado { background: var(--danger-bg); color: var(--danger-fg); }
 button.badge {
@@ -634,6 +634,29 @@ button.badge {
 button.badge .ms { font-size: 14px; opacity: .75; }
 button.badge:hover { box-shadow: inset 0 0 0 1px currentColor; }
 button.badge:focus-visible { outline: none; box-shadow: var(--sombra-focus); }
+
+/* Desplegable de estado (select compacto 32px, coloreado según el estado) */
+select.status-select {
+  width: auto;
+  min-width: 132px;
+  height: var(--control-h);
+  padding: 0 32px 0 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font: 600 12px/1.2 var(--font-sans);
+  background-color: var(--primario-100);
+  color: var(--primario-800);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23252525' stroke-opacity='.7' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 10px center;
+}
+select.status-select:hover { border-color: currentColor; }
+select.status-select:focus { border-color: currentColor; box-shadow: var(--sombra-focus); }
+select.status-select option { background: var(--bg-surface); color: var(--fg-1); font-weight: 400; }
+select.status-select.status-pendiente, select.status-select.status-pendiente:focus { background-color: var(--primario-100); color: var(--primario-800); }
+select.status-select.status-en-progreso, select.status-select.status-en-progreso:focus { background-color: var(--info-bg); color: var(--info-fg); }
+select.status-select.status-en-test, select.status-select.status-en-test:focus { background-color: var(--warning-bg); color: var(--warning-fg); }
+select.status-select.status-completado, select.status-select.status-completado:focus { background-color: var(--success-bg); color: var(--success-fg); }
+select.status-select.status-bloqueado, select.status-select.status-bloqueado:focus { background-color: var(--danger-bg); color: var(--danger-fg); }
 
 /* Método HTTP: etiqueta mono con fondo suave */
 .method {

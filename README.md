@@ -20,7 +20,7 @@ Dashboard web estático (HTML + CSS + JavaScript vanilla, sin build) para hacer 
 - **KPIs superiores**: total de APIs, % de avance global (endpoints/features completados sobre el total), endpoints completados vs. pendientes y **alertas** de entregas vencidas o próximas (≤ 14 días) de APIs y endpoints sin completar. Los KPIs se recalculan según los filtros activos.
 - **Búsqueda y filtros combinables**: texto libre (nombre, contexto, rutas, responsables…), **Responsable** (de la API o de alguna feature), **Desarrollo afectado**, **Estado** y **rango de fecha de entrega**.
 - **Vista de tarjetas o tabla** con contexto, responsable, etiquetas de desarrollos afectados, fecha estimada (resaltada si está vencida o próxima) y **barra de progreso** calculada automáticamente.
-- **Desglose por API** (botón *Ver desglose*): tabla de endpoints/features con método, ruta, responsable (hereda el de la API si está vacío), fecha y estado. **Un clic sobre el estado** lo pasa al siguiente: `Pendiente → En Progreso → Completado → Bloqueado`.
+- **Desglose por API** (botón *Ver desglose*): tabla de endpoints/features con método, ruta, responsable (hereda el de la API si está vacío), fecha y estado. El **estado se elige desde un desplegable** (coloreado según el estado): `Pendiente`, `En Progreso`, `En Test`, `Completado` o `Bloqueado`. El filtro **Estado** permite filtrar tanto por el estado de la API como por APIs que tengan endpoints/features en un estado dado (p. ej. *En Test*).
 - **Alta, edición y eliminación** de APIs y endpoints mediante formularios con validación.
 - **Diseño alineado al manual de marca**: aunque es un sitio independiente, sigue los tokens y patrones del Design System *Giro / BackOffice* de ACA (navy `#293380` para acciones primarias y títulos, naranja `#F18E1A` solo para destacados, tipografía Gabarito, íconos Material Symbols Rounded, badges de estado suaves, tabs en píldora y controles de 32/40 px). Los tokens están al inicio de `styles.css`.
 
@@ -45,7 +45,7 @@ Dashboard web estático (HTML + CSS + JavaScript vanilla, sin build) para hacer 
           "metodo": "GET",                     // GET | POST | PUT | PATCH | DELETE | EVENT/ASYNC | FEATURE
           "rutaONombre": "/v1/acopios",
           "descripcion": "Qué resuelve",
-          "estado": "Completado",              // Pendiente | En Progreso | Completado | Bloqueado
+          "estado": "Completado",              // Pendiente | En Progreso | En Test | Completado | Bloqueado
           "responsableFeature": "",            // vacío = hereda el responsable de la API
           "fechaEstimada": "2026-10-10"
         }

@@ -96,7 +96,7 @@
           "metodo": "GET",
           "rutaONombre": "/v1/liquidaciones/{id}",
           "descripcion": "Obtiene el detalle de una liquidación con retenciones y percepciones.",
-          "estado": "En Progreso",
+          "estado": "En Test",
           "responsableFeature": "Valentina Torres",
           "fechaEstimada": "2026-11-08"
         },
