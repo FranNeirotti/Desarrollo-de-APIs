@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-11T10:45:38.844Z",
+  "actualizado": "2026-11-11T10:47:54.320Z",
   "apis": [
     {
       "id": "peg-256",
@@ -394,6 +394,23 @@
           "fechaEstimada": ""
         }
       ]
+    },
+    {
+      "id": "peg-170",
+      "nombre": "API (granos e insumos)",
+      "contexto": "Toneladas totales movidas",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Estadisticas",
+        "Backoffice",
+        "Puertos"
+      ],
+      "estadoGeneral": "Planificada",
+      "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
     }
   ]
 }
