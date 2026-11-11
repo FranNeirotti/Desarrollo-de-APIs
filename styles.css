@@ -180,23 +180,7 @@ h1, h2, h3, h4 { margin: 0; line-height: 1.2; color: var(--fg-1); }
   z-index: 20;
 }
 .brand { display: flex; align-items: center; gap: var(--gap-inner); }
-.brand-logo {
-  font: 800 24px/1 var(--font-sans);
-  color: var(--brand);
-  letter-spacing: -.02em;
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-}
-.brand-logo::after {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  align-self: flex-end;
-  margin-bottom: 3px;
-}
+.brand-logo { display: block; height: 32px; width: auto; flex: none; }
 .brand-sep { width: 1px; height: 36px; background: var(--border-default); flex: none; }
 .brand h1 { font-size: var(--fs-nav-title); font-weight: 700; color: var(--brand); }
 .brand-sub { margin: 2px 0 0; font-size: var(--fs-caption); color: var(--fg-3); }
