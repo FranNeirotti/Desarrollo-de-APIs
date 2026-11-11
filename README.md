@@ -7,7 +7,7 @@ Dashboard web estático (HTML + CSS + JavaScript vanilla, sin build) para hacer 
 ```
 .
 ├── index.html                    # Estructura de la SPA (tablero, filtros, modales)
-├── styles.css                    # Estilos corporativos y responsive
+├── styles.css                    # Estilos según el Design System Giro / BackOffice de ACA
 ├── app.js                        # Lógica: render, filtros, edición, GitHub API, import/export
 ├── data/
 │   └── apis.json                 # Fuente de verdad: catálogo y estado de las APIs
@@ -22,6 +22,7 @@ Dashboard web estático (HTML + CSS + JavaScript vanilla, sin build) para hacer 
 - **Vista de tarjetas o tabla** con contexto, responsable, etiquetas de desarrollos afectados, fecha estimada (resaltada si está vencida o próxima) y **barra de progreso** calculada automáticamente.
 - **Desglose por API** (botón *Ver desglose*): tabla de endpoints/features con método, ruta, responsable (hereda el de la API si está vacío), fecha y estado. **Un clic sobre el estado** lo pasa al siguiente: `Pendiente → En Progreso → Completado → Bloqueado`.
 - **Alta, edición y eliminación** de APIs y endpoints mediante formularios con validación.
+- **Diseño alineado al manual de marca**: aunque es un sitio independiente, sigue los tokens y patrones del Design System *Giro / BackOffice* de ACA (navy `#293380` para acciones primarias y títulos, naranja `#F18E1A` solo para destacados, tipografía Gabarito, íconos Material Symbols Rounded, badges de estado suaves, tabs en píldora y controles de 32/40 px). Los tokens están al inicio de `styles.css`.
 
 ### Modelo de datos (`data/apis.json`)
 

@@ -568,6 +568,7 @@
   // ---------------------------------------------------------------------------
   // Fragmentos de UI
   // ---------------------------------------------------------------------------
+  const icn = (name, cls) => `<span class="ms${cls ? ` ${cls}` : ''}" aria-hidden="true">${name}</span>`;
   const badge = (estado) => `<span class="badge badge-${slug(estado)}">${esc(estado)}</span>`;
   const methodTag = (m) => `<span class="method method-${slug(m)}">${esc(m)}</span>`;
 
@@ -580,7 +581,7 @@
     const st = dateStatus(fecha, done);
     const days = daysUntil(fecha);
     const title = st ? relativeDays(days) : '';
-    const icon = st === 'overdue' ? '⚠ ' : st === 'soon' ? '⏰ ' : '';
+    const icon = st === 'overdue' ? icn('error') : st === 'soon' ? icn('schedule') : '';
     return `<span class="date-chip ${st}" title="${esc(title)}">${icon}${esc(fmtDate(fecha))}</span>`;
   }
 
@@ -659,8 +660,8 @@
     if (!alerts.length) { box.innerHTML = ''; return; }
     const hasOverdue = alerts.some((a) => a.st === 'overdue');
     box.innerHTML = `
-      <details ${hasOverdue ? 'open' : ''}>
-        <summary>${hasOverdue ? '⚠' : '⏰'} ${alerts.length} entrega${alerts.length === 1 ? '' : 's'} vencida${alerts.length === 1 ? '' : 's'} o próxima${alerts.length === 1 ? '' : 's'}</summary>
+      <details class="${hasOverdue ? 'has-overdue' : ''}" ${hasOverdue ? 'open' : ''}>
+        <summary>${icn(hasOverdue ? 'error' : 'schedule', 'ms-fill')} ${alerts.length} entrega${alerts.length === 1 ? '' : 's'} vencida${alerts.length === 1 ? '' : 's'} o próxima${alerts.length === 1 ? '' : 's'}</summary>
         <ul>
           ${alerts.map((a) => `
             <li>
@@ -699,12 +700,12 @@
           <span class="progress-label">${s.pct}%</span>
         </div>
         <div class="api-card-foot">
-          <button type="button" class="btn btn-sm btn-ghost" data-action="open-detail" data-api-id="${esc(api.id)}">
-            Ver desglose · ${s.done}/${s.total} completados
+          <button type="button" class="btn btn-sm btn-secondary" data-action="open-detail" data-api-id="${esc(api.id)}">
+            ${icn('list_alt')}Ver desglose · ${s.done}/${s.total} completados
           </button>
           <div class="card-actions">
-            <button type="button" class="icon-btn" title="Editar API" aria-label="Editar API" data-action="edit-api" data-api-id="${esc(api.id)}">✎</button>
-            <button type="button" class="icon-btn danger" title="Eliminar API" aria-label="Eliminar API" data-action="delete-api" data-api-id="${esc(api.id)}">🗑</button>
+            <button type="button" class="icon-btn" title="Editar API" aria-label="Editar API" data-action="edit-api" data-api-id="${esc(api.id)}">${icn('edit')}</button>
+            <button type="button" class="icon-btn danger" title="Eliminar API" aria-label="Eliminar API" data-action="delete-api" data-api-id="${esc(api.id)}">${icn('delete')}</button>
           </div>
         </div>
       </article>`;
@@ -733,9 +734,9 @@
                   <td>${dateChip(api.fechaEstimadaEntrega, api.estadoGeneral === 'En Producción')}</td>
                   <td>${tags(api.desarrolloAfectado)}</td>
                   <td class="cell-actions">
-                    <button type="button" class="icon-btn" title="Ver desglose" aria-label="Ver desglose" data-action="open-detail" data-api-id="${esc(api.id)}">☰</button>
-                    <button type="button" class="icon-btn" title="Editar API" aria-label="Editar API" data-action="edit-api" data-api-id="${esc(api.id)}">✎</button>
-                    <button type="button" class="icon-btn danger" title="Eliminar API" aria-label="Eliminar API" data-action="delete-api" data-api-id="${esc(api.id)}">🗑</button>
+                    <button type="button" class="icon-btn" title="Ver desglose" aria-label="Ver desglose"                     data-action="open-detail" data-api-id="${esc(api.id)}">${icn('visibility')}</button>
+                                        <button type="button" class="icon-btn" title="Editar API" aria-label="Editar API" data-action="edit-api" data-api-id="${esc(api.id)}">${icn('edit')}</button>
+                                        <button type="button" class="icon-btn danger" title="Eliminar API" aria-label="Eliminar API" data-action="delete-api" data-api-id="${esc(api.id)}">${icn('delete')}</button>
                   </td>
                 </tr>`;
             }).join('')}
@@ -752,16 +753,16 @@
 
     if (state.loadError) {
       list.className = '';
-      list.innerHTML = `<div class="empty"><strong>No se pudieron cargar los datos.</strong><br>${esc(state.loadError)}<br><br>
-        <button type="button" class="btn btn-primary" data-action="reload-remote">Reintentar</button>
-        <button type="button" class="btn btn-ghost" data-action="import-json">Importar JSON</button></div>`;
+      list.innerHTML = `<div class="empty">${icn('cloud_off', 'ms-empty')}<strong>No se pudieron cargar los datos.</strong><br>${esc(state.loadError)}<br><br>
+        <button type="button" class="btn btn-primary" data-action="reload-remote">${icn('sync')}Reintentar</button>
+        <button type="button" class="btn btn-secondary" data-action="import-json">${icn('file_upload')}Importar JSON</button></div>`;
       return;
     }
     if (!apis.length) {
       list.className = '';
       list.innerHTML = total
-        ? '<div class="empty">Ninguna API coincide con los filtros seleccionados.<br><br><button type="button" class="btn btn-ghost" data-action="clear-filters">Limpiar filtros</button></div>'
-        : '<div class="empty">Todavía no hay APIs registradas.<br><br><button type="button" class="btn btn-primary" data-action="new-api">＋ Crear la primera API</button></div>';
+        ? `<div class="empty">${icn('search_off', 'ms-empty')}Ninguna API coincide con los filtros seleccionados.<br><br><button type="button" class="btn btn-secondary" data-action="clear-filters">${icn('filter_alt_off')}Limpiar filtros</button></div>`
+        : `<div class="empty">${icn('api', 'ms-empty')}Todavía no hay APIs registradas.<br><br><button type="button" class="btn btn-primary" data-action="new-api">${icn('add')}Crear la primera API</button></div>`;
       return;
     }
     if (state.view === 'table') {
@@ -832,11 +833,11 @@
           <td>${dateChip(e.fechaEstimada, e.estado === 'Completado')}</td>
           <td>
             <button type="button" class="badge badge-${slug(e.estado)}" data-action="cycle-ep" data-api-id="${esc(api.id)}" data-ep-id="${esc(e.id)}"
-              title="Clic para cambiar a “${esc(next)}”">${esc(e.estado)} ↻</button>
+              title="Clic para cambiar a “${esc(next)}”">${esc(e.estado)} ${icn('sync')}</button>
           </td>
           <td class="cell-actions">
-            <button type="button" class="icon-btn" title="Editar" aria-label="Editar endpoint" data-action="edit-ep" data-api-id="${esc(api.id)}" data-ep-id="${esc(e.id)}">✎</button>
-            <button type="button" class="icon-btn danger" title="Eliminar" aria-label="Eliminar endpoint" data-action="delete-ep" data-api-id="${esc(api.id)}" data-ep-id="${esc(e.id)}">🗑</button>
+            <button type="button" class="icon-btn" title="Editar" aria-label="Editar endpoint" data-action="edit-ep" data-api-id="${esc(api.id)}" data-ep-id="${esc(e.id)}">${icn('edit')}</button>
+            <button type="button" class="icon-btn danger" title="Eliminar" aria-label="Eliminar endpoint" data-action="delete-ep" data-api-id="${esc(api.id)}" data-ep-id="${esc(e.id)}">${icn('delete')}</button>
           </td>
         </tr>`;
     }).join('');
@@ -847,7 +848,7 @@
           <h3>${esc(api.nombre)} ${badge(api.estadoGeneral)}</h3>
           <div class="api-id">${esc(api.id)}</div>
         </div>
-        <button type="button" class="icon-btn" data-action="close-modal" aria-label="Cerrar">✕</button>
+        <button type="button" class="icon-btn" data-action="close-modal" aria-label="Cerrar">${icn('close')}</button>
       </header>
       <div class="modal-body">
         <div class="detail-grid">
@@ -868,7 +869,7 @@
           <div class="status-summary">
             ${ESTADOS_EP.map((st) => `${badge(st)}<span>${api.endpointsFeatures.filter((e) => e.estado === st).length}</span>`).join(' ')}
           </div>
-          <button type="button" class="btn btn-sm btn-primary" data-action="new-ep" data-api-id="${esc(api.id)}">＋ Agregar endpoint / feature</button>
+          <button type="button" class="btn btn-sm btn-primary" data-action="new-ep" data-api-id="${esc(api.id)}">${icn('add')}Agregar endpoint / feature</button>
         </div>
         ${api.endpointsFeatures.length ? `
           <div class="table-wrap">
@@ -877,13 +878,13 @@
               <tbody>${rows}</tbody>
             </table>
           </div>
-          <p class="hint">Hacé clic en el estado para pasar al siguiente (Pendiente → En Progreso → Completado → Bloqueado). Los cambios se guardan como borrador local hasta que los publiques.</p>`
+          <p class="hint">${icn('info')}Hacé clic en el estado para pasar al siguiente (Pendiente → En Progreso → Completado → Bloqueado). Los cambios se guardan como borrador local hasta que los publiques.</p>`
         : '<div class="empty">Esta API todavía no tiene endpoints ni features cargados.</div>'}
       </div>
       <footer class="modal-footer">
         <button type="button" class="btn btn-danger-ghost" data-action="delete-api" data-api-id="${esc(api.id)}">Eliminar API</button>
         <span class="spacer"></span>
-        <button type="button" class="btn btn-ghost" data-action="edit-api" data-api-id="${esc(api.id)}">Editar API</button>
+        <button type="button" class="btn btn-secondary" data-action="edit-api" data-api-id="${esc(api.id)}">${icn('edit')}Editar API</button>
         <button type="button" class="btn btn-primary" data-action="close-modal">Cerrar</button>
       </footer>`;
   }

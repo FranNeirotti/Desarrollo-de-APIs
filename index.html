@@ -5,28 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Tablero de seguimiento del desarrollo de APIs de ACA">
   <title>ACA · Seguimiento de APIs</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%BE%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23293380'/%3E%3Ctext x='32' y='42' font-family='Arial,sans-serif' font-size='24' font-weight='800' fill='%23fff' text-anchor='middle'%3EACA%3C/text%3E%3Ccircle cx='52' cy='50' r='5' fill='%23F18E1A'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-logo" aria-hidden="true">ACA</span>
+      <span class="brand-sep" aria-hidden="true"></span>
       <div>
         <h1>Seguimiento de APIs</h1>
         <p class="brand-sub">Catálogo y tablero de desarrollo de APIs de ACA</p>
       </div>
     </div>
     <div class="topbar-actions">
-      <button class="btn btn-primary" data-action="new-api" type="button">＋ Nueva API</button>
-      <button class="btn btn-success" data-action="save-repo" type="button">⬆ Guardar en Repositorio</button>
+      <button class="btn btn-primary" data-action="new-api" type="button"><span class="ms" aria-hidden="true">add</span>Nueva API</button>
+      <button class="btn btn-success" data-action="save-repo" type="button"><span class="ms" aria-hidden="true">cloud_upload</span>Guardar en Repositorio</button>
       <div class="dropdown">
-        <button class="btn btn-ghost" data-action="toggle-menu" type="button" aria-haspopup="true" aria-expanded="false">⋯ Más</button>
+        <button class="btn btn-ghost" data-action="toggle-menu" type="button" aria-haspopup="true" aria-expanded="false"><span class="ms" aria-hidden="true">more_vert</span>Más</button>
         <div class="dropdown-menu" id="more-menu" role="menu">
-          <button type="button" role="menuitem" data-action="export-json">⬇ Exportar JSON</button>
-          <button type="button" role="menuitem" data-action="import-json">⬆ Importar JSON</button>
-          <button type="button" role="menuitem" data-action="reload-remote">⟳ Recargar desde repositorio</button>
-          <button type="button" role="menuitem" data-action="open-settings">⚙ Configuración GitHub</button>
+          <button type="button" role="menuitem" data-action="export-json"><span class="ms" aria-hidden="true">file_download</span>Exportar JSON</button>
+          <button type="button" role="menuitem" data-action="import-json"><span class="ms" aria-hidden="true">file_upload</span>Importar JSON</button>
+          <button type="button" role="menuitem" data-action="reload-remote"><span class="ms" aria-hidden="true">sync</span>Recargar desde repositorio</button>
+          <button type="button" role="menuitem" data-action="open-settings"><span class="ms" aria-hidden="true">settings</span>Configuración GitHub</button>
         </div>
       </div>
       <input type="file" id="import-file" accept="application/json,.json" hidden>
@@ -34,10 +39,10 @@
   </header>
 
   <div id="draft-banner" class="banner banner-warning" hidden>
-    <span id="draft-banner-text">Hay cambios locales sin publicar en el repositorio.</span>
+    <span class="banner-msg"><span class="ms" aria-hidden="true">warning</span><span id="draft-banner-text">Hay cambios locales sin publicar en el repositorio.</span></span>
     <div class="banner-actions">
       <button class="btn btn-sm btn-success" data-action="save-repo" type="button">Publicar ahora</button>
-      <button class="btn btn-sm btn-ghost" data-action="export-json" type="button">Exportar JSON</button>
+      <button class="btn btn-sm btn-secondary" data-action="export-json" type="button">Exportar JSON</button>
       <button class="btn btn-sm btn-ghost" data-action="discard-draft" type="button">Descartar borrador</button>
     </div>
   </div>
@@ -50,6 +55,7 @@
     <section class="filters card" aria-label="Filtros">
       <div class="filter-field filter-search">
         <label for="f-search">Buscar</label>
+        <span class="ms" aria-hidden="true">search</span>
         <input id="f-search" type="search" placeholder="Nombre, contexto, endpoint, responsable…" autocomplete="off">
       </div>
       <div class="filter-field">
@@ -73,15 +79,15 @@
         <input id="f-hasta" type="date">
       </div>
       <div class="filter-field filter-actions">
-        <button class="btn btn-ghost" data-action="clear-filters" type="button">Limpiar filtros</button>
+        <button class="btn btn-sm btn-ghost" data-action="clear-filters" type="button"><span class="ms" aria-hidden="true">filter_alt_off</span>Limpiar filtros</button>
       </div>
     </section>
 
     <div class="list-header">
       <h2 id="list-title">APIs</h2>
       <div class="view-toggle" role="group" aria-label="Vista">
-        <button type="button" class="btn btn-sm btn-ghost is-active" data-action="set-view" data-view="cards">Tarjetas</button>
-        <button type="button" class="btn btn-sm btn-ghost" data-action="set-view" data-view="table">Tabla</button>
+        <button type="button" class="btn btn-sm btn-ghost is-active" data-action="set-view" data-view="cards"><span class="ms" aria-hidden="true">grid_view</span>Tarjetas</button>
+        <button type="button" class="btn btn-sm btn-ghost" data-action="set-view" data-view="table"><span class="ms" aria-hidden="true">table_rows</span>Tabla</button>
       </div>
     </div>
 
@@ -103,7 +109,7 @@
     <form id="form-api" class="modal-content" novalidate>
       <header class="modal-header">
         <h3 id="form-api-title">Nueva API</h3>
-        <button type="button" class="icon-btn" data-action="close-modal" aria-label="Cerrar">✕</button>
+        <button type="button" class="icon-btn" data-action="close-modal" aria-label="Cerrar"><span class="ms" aria-hidden="true">close</span></button>
       </header>
       <div class="modal-body form-grid">
         <input type="hidden" name="originalId">
@@ -144,7 +150,7 @@
         <p class="form-error form-full" id="form-api-error" role="alert"></p>
       </div>
       <footer class="modal-footer">
-        <button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button>
+        <button type="button" class="btn btn-secondary" data-action="close-modal">Cancelar</button>
         <button type="submit" class="btn btn-primary">Guardar</button>
       </footer>
     </form>
@@ -155,7 +161,7 @@
     <form id="form-endpoint" class="modal-content" novalidate>
       <header class="modal-header">
         <h3 id="form-endpoint-title">Nuevo endpoint / feature</h3>
-        <button type="button" class="icon-btn" data-action="close-modal" aria-label="Cerrar">✕</button>
+        <button type="button" class="icon-btn" data-action="close-modal" aria-label="Cerrar"><span class="ms" aria-hidden="true">close</span></button>
       </header>
       <div class="modal-body form-grid">
         <input type="hidden" name="apiId">
@@ -191,7 +197,7 @@
         <p class="form-error form-full" id="form-endpoint-error" role="alert"></p>
       </div>
       <footer class="modal-footer">
-        <button type="button" class="btn btn-ghost" data-action="close-modal">Cancelar</button>
+        <button type="button" class="btn btn-secondary" data-action="close-modal">Cancelar</button>
         <button type="submit" class="btn btn-primary">Guardar</button>
       </footer>
     </form>
@@ -202,7 +208,7 @@
     <form id="form-settings" class="modal-content" novalidate>
       <header class="modal-header">
         <h3>Configuración de GitHub</h3>
-        <button type="button" class="icon-btn" data-action="close-modal" aria-label="Cerrar">✕</button>
+        <button type="button" class="icon-btn" data-action="close-modal" aria-label="Cerrar"><span class="ms" aria-hidden="true">close</span></button>
       </header>
       <div class="modal-body form-grid">
         <p class="form-full muted">
@@ -237,7 +243,7 @@
       <footer class="modal-footer">
         <button type="button" class="btn btn-danger-ghost" data-action="forget-token">Olvidar token</button>
         <span class="spacer"></span>
-        <button type="button" class="btn btn-ghost" data-action="test-connection">Probar conexión</button>
+        <button type="button" class="btn btn-secondary" data-action="test-connection"><span class="ms" aria-hidden="true">wifi_tethering</span>Probar conexión</button>
         <button type="submit" class="btn btn-primary">Guardar configuración</button>
       </footer>
     </form>
@@ -249,7 +255,7 @@
       <header class="modal-header"><h3 id="confirm-title">Confirmar</h3></header>
       <div class="modal-body"><p id="confirm-message"></p></div>
       <footer class="modal-footer">
-        <button value="cancel" class="btn btn-ghost">Cancelar</button>
+        <button value="cancel" class="btn btn-secondary">Cancelar</button>
         <button value="ok" class="btn btn-danger" id="confirm-ok">Confirmar</button>
       </footer>
     </form>
