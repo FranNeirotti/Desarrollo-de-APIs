@@ -1,0 +1,15 @@
+{
+  "$comentario": "Configuración de la sincronización data/apis.json -> Jira. El ticket de cada API es su campo id en mayúsculas (agn-906 -> AGN-906). Las credenciales NO van acá: se leen de los secrets JIRA_BASE_URL, JIRA_EMAIL y JIRA_API_TOKEN.",
+  "enabled": true,
+  "comment": true,
+  "transitions": true,
+  "dashboardUrl": "https://franneirotti.github.io/Desarrollo-de-APIs/",
+  "ignoreIds": [],
+  "statusMap": {
+    "Planificada": ["Por hacer", "Tareas por hacer", "Backlog", "Abierto", "To Do"],
+    "En Desarrollo": ["En curso", "En progreso", "En desarrollo", "Desarrollo", "In Progress"],
+    "En QA / Testing": ["Pruebas", "Testing", "En pruebas", "QA", "En QA"],
+    "En Producción": ["Listo", "Finalizado", "Hecho", "Done", "Resuelto"],
+    "Bloqueada": ["En pausa", "Bloqueado", "Bloqueada", "Blocked"]
+  }
+}

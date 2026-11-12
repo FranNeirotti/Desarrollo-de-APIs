@@ -12,8 +12,14 @@ Dashboard web estático (HTML + CSS + JavaScript vanilla, sin build) para hacer 
 ├── assets/                       # Logo Giro (header) e isotipo ACA (favicon)
 ├── data/
 │   └── apis.json                 # Fuente de verdad: catálogo y estado de las APIs
+├── jira/
+│   ├── config.json               # Mapeo de estados → Jira y opciones de la sincronización
+│   ├── sync.mjs                  # Script de sincronización con Jira (Node 20+, sin dependencias)
+│   └── sync.test.mjs             # Tests de la lógica de diff y mapeo
 ├── .nojekyll                     # Evita el procesamiento Jekyll en Pages
-└── .github/workflows/deploy.yml  # Valida y despliega en GitHub Pages en cada push a main
+└── .github/workflows/
+    ├── deploy.yml                # Valida y despliega en GitHub Pages en cada push a main
+    └── jira-sync.yml             # Actualiza los tickets de Jira cuando cambia data/apis.json
 ```
 
 ## ¿Cómo funciona el tablero?
@@ -107,6 +113,57 @@ Con el token configurado, el tablero también lee los datos directamente desde l
 3. Para continuar el trabajo de otra persona o restaurar una versión, usá **⋯ Más → ⬆ Importar JSON** (valida el formato y lo carga como borrador).
 
 Otras acciones: **⟳ Recargar desde repositorio** / **Descartar borrador** vuelven a la versión publicada.
+
+## Sincronización con Jira
+
+Cada API del tablero está vinculada a un ticket de Jira: **el ticket es el campo `id` en mayúsculas** (`agn-906` → `AGN-906`, `peg-256` → `PEG-256`). Cuando se guarda un cambio en `data/apis.json` sobre `main` (desde el tablero con *Guardar en Repositorio* o por commit/PR), el workflow **Sincronizar APIs con Jira** (`.github/workflows/jira-sync.yml`) compara la versión anterior con la nueva y, **solo para las APIs cuyo contenido cambió**:
+
+1. Agrega un **comentario** en el ticket con el resumen actual (estado, % de avance, endpoints/features completados sobre el total, fecha estimada de entrega, prioridad) y la lista de cambios (por ejemplo `Estado: En Desarrollo → En QA / Testing` o `GET /api/Contratos: estado En Progreso → Completado`), con enlace al commit y al tablero.
+2. Si cambió el **estado de la API**, intenta la **transición** de Jira equivalente según el mapeo de `jira/config.json`. Si el ticket ya está en ese estado o no existe una transición posible desde su estado actual, solo comenta, sin fallar.
+
+Además:
+
+- Reordenar APIs no genera comentarios; cambiar el orden de los endpoints de una API sí.
+- Si el ticket no existe o no hay permiso para verlo, el workflow registra una advertencia y sigue con los demás.
+- La sincronización es **idempotente**: guarda en el ticket una propiedad (`aca-apis-sync`) con un hash del contenido sincronizado, así que relanzar el workflow no duplica comentarios ni transiciones.
+- **Ninguna credencial va en la página ni en el repositorio**: el tablero es estático y la conexión con Jira ocurre solo dentro de GitHub Actions.
+
+### Configuración (una sola vez)
+
+En GitHub, andá a **Settings → Secrets and variables → Actions → New repository secret** y creá:
+
+| Secret | Valor |
+|---|---|
+| `JIRA_BASE_URL` | URL del sitio de Jira Cloud, por ejemplo `https://acacoop.atlassian.net` |
+| `JIRA_EMAIL` | Email de la cuenta de Atlassian con la que se harán los comentarios (idealmente una cuenta de servicio) |
+| `JIRA_API_TOKEN` | API token de esa cuenta, creado en https://id.atlassian.com/manage-profile/security/api-tokens |
+
+La cuenta necesita permiso para ver, comentar y transicionar los tickets de los proyectos involucrados (AGN, PEG, CE…). Mientras falten los secrets, el workflow termina con una advertencia y no falla.
+
+### Mapeo de estados (`jira/config.json`)
+
+Cada estado del tablero tiene una lista de estados de Jira candidatos, en orden de preferencia. Se usa la primera transición disponible cuyo **estado destino** (o nombre de transición) coincida con un candidato; la comparación ignora mayúsculas y acentos.
+
+| Estado en el tablero | Estados de Jira candidatos (por defecto) |
+|---|---|
+| Planificada | Por hacer, Tareas por hacer, Backlog, Abierto, To Do |
+| En Desarrollo | En curso, En progreso, En desarrollo, Desarrollo, In Progress |
+| En QA / Testing | Pruebas, Testing, En pruebas, QA, En QA |
+| En Producción | Listo, Finalizado, Hecho, Done, Resuelto |
+| Bloqueada | En pausa, Bloqueado, Bloqueada, Blocked |
+
+En el mismo archivo podés desactivar todo (`"enabled": false`), solo los comentarios (`"comment": false`) o solo las transiciones (`"transitions": false`), excluir APIs (`"ignoreIds": ["peg-256"]`) y cambiar el enlace al tablero (`dashboardUrl`).
+
+### Ejecutarlo a mano o probarlo localmente
+
+- **Desde GitHub**: en **Actions → Sincronizar APIs con Jira → Run workflow** podés elegir con qué versión comparar (`before_ref`, por defecto `HEAD~1`), limitar a ciertas APIs (`only`, p. ej. `agn-906,ce-361`) y activar `dry_run`. Para forzar el envío de APIs puntuales aunque no hayan cambiado, usá `before_ref: none` junto con `only`.
+- **Localmente, sin tocar Jira** (dry-run, no necesita credenciales):
+
+```bash
+node jira/sync.mjs --before-ref HEAD~1 --dry-run          # qué se enviaría por el último cambio
+node jira/sync.mjs --before viejo.json --after data/apis.json --dry-run
+node --test jira/sync.test.mjs                            # tests de diff y mapeo
+```
 
 ## Compartir el tablero con el equipo
 

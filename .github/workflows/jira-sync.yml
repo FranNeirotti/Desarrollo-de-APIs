@@ -1,0 +1,72 @@
+name: Sincronizar APIs con Jira
+
+# Cuando cambia data/apis.json en main, actualiza el ticket de Jira de cada API modificada
+# (ticket = campo id en mayúsculas: agn-906 -> AGN-906). Ver jira/config.json y el README.
+on:
+  push:
+    branches: [main]
+    paths: [data/apis.json]
+  workflow_dispatch:
+    inputs:
+      before_ref:
+        description: 'Versión anterior con la que comparar (commit, rama o HEAD~1)'
+        required: false
+        default: 'HEAD~1'
+      only:
+        description: 'Opcional: ids de API separados por coma para sincronizar solo esas'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Solo mostrar qué se haría, sin escribir en Jira'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jira-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Actualizar tickets de Jira
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Tests de la sincronización
+        run: node --test jira/sync.test.mjs
+
+      - name: Sincronizar
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          INPUT_BEFORE_REF: ${{ inputs.before_ref }}
+          INPUT_ONLY: ${{ inputs.only }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "push" ]; then
+            BEFORE="$PUSH_BEFORE"
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+              BEFORE="HEAD~1"
+            fi
+          else
+            BEFORE="${INPUT_BEFORE_REF:-HEAD~1}"
+          fi
+          ARGS=(--before-ref "$BEFORE" --after data/apis.json --commit "$GITHUB_SHA")
+          if [ -n "${INPUT_ONLY:-}" ]; then ARGS+=(--only "$INPUT_ONLY"); fi
+          if [ "${INPUT_DRY_RUN:-false}" = "true" ]; then ARGS+=(--dry-run); fi
+          echo "Comparando data/apis.json de $BEFORE contra $GITHUB_SHA"
+          node jira/sync.mjs "${ARGS[@]}"
