@@ -1,7 +1,316 @@
 {
   "version": 1,
-  "actualizado": "2026-11-11T21:01:07.551Z",
+  "actualizado": "2026-11-12T00:11:05.711Z",
   "apis": [
+    {
+      "id": "agn-906",
+      "nombre": "Aplicaciones (API descargas)",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "TACI",
+        "Backoffice",
+        "Agronegocios"
+      ],
+      "estadoGeneral": "En Desarrollo",
+      "prioridad": "Alta",
+      "fechaEstimadaEntrega": "2026-12-25",
+      "endpointsFeatures": [
+        {
+          "id": "agn-906-ep-01",
+          "metodo": "GET",
+          "rutaONombre": "/api/Descargas",
+          "descripcion": "Listado de descargas (tablas Descargas y Cartas Porte) con filtros y orden por columna.\nPendiente: filtro Fecha de Salida, Planta por nombre (hoy solo número), Zona multi-valor, Estado (BLOQUEADO / SIN CONTRATO / OK), Corredor (no llega el dato); Propia producción falta implementar.\n35/43 funciona.",
+          "estado": "En Progreso",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-02",
+          "metodo": "GET",
+          "rutaONombre": "/api/Descargas/{id}",
+          "descripcion": "Detalle de carta de porte (endpoint a crear). Hoy el detalle se arma desde el listado con pageSize=1 y el CTG no es único.\nPendiente: Comprobante, estado Puerto/Calada, Cargador, Rte. Comercial, datos de transporte y flete, Silos, Vale, Recibo, servicios, Tara, desglose de mermas, Temperatura, intervinientes, análisis y honorarios. En validación: Destinatario y Corredor Comprador.\n23/74 funciona.",
+          "estado": "En Progreso",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-03",
+          "metodo": "GET",
+          "rutaONombre": "/api/Contratos",
+          "descripcion": "Listado de contratos con filtros y orden por columna.\nPendiente: Moneda, Cont. Comprador (no llega el dato), Zona multi-valor, Estado de bloqueo del contrato, Corredor; Grano falta implementar.\n30/39 funciona.",
+          "estado": "En Progreso",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-04",
+          "metodo": "GET",
+          "rutaONombre": "/api/v1/negocios/detalle",
+          "descripcion": "Detalle de negocio (cabecera, tablas y secciones).\nPendiente: Pago, Comisión, Cont. Comprador, Correl. DGI; tablas Ampliaciones/Reducciones, Órdenes de Fijar y Cláusulas; secciones Cupos, Entregas, Condiciones, Garantías, Certificados, Resumen de Cuenta y Comprobantes IVA; paginación y orderBy server-side. En validación: HC, totales de cabecera y resumenCalidad.\n41/81 funciona.",
+          "estado": "En Progreso",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-05",
+          "metodo": "FEATURE",
+          "rutaONombre": "Sección Aplicado — Negocios",
+          "descripcion": "Tabla de negocios con CTGs aplicados (filtros y orden).\nPendiente: Cont. Comprador, TT Aplicada y TT a desaplicar (filtro), CTG y Zona (no llega el dato).\n9/16 funciona.",
+          "estado": "En Progreso",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-06",
+          "metodo": "FEATURE",
+          "rutaONombre": "Sección Aplicado — CTGs (filtros)",
+          "descripcion": "Tabla de CTGs aplicados con filtros y orden.\nPendiente: filtro Grano, Corredor, Zona; Fecha requiere rango por fechaMovimiento; orden por Estado falta implementar. En validación: orden por Moneda.\n32/39 funciona.",
+          "estado": "En Progreso",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-07",
+          "metodo": "GET",
+          "rutaONombre": "/api/v1/contratos/bloqueos/estado",
+          "descripcion": "Indica si un contrato está bloqueado (devuelve bloqueado e idBloqueo).\n1/1 funciona.",
+          "estado": "Completado",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-08",
+          "metodo": "GET",
+          "rutaONombre": "/api/v1/contratos/bloqueos",
+          "descripcion": "Lista bloqueos filtrando por activo (true / false / todos), paginado.\n1/1 funciona.",
+          "estado": "Completado",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-09",
+          "metodo": "POST",
+          "rutaONombre": "/api/v1/contratos/bloqueos",
+          "descripcion": "Registra un bloqueo de contrato (uniNego, contInterno, contrato, motivo).\n1/1 funciona.",
+          "estado": "Completado",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-10",
+          "metodo": "DELETE",
+          "rutaONombre": "/api/v1/contratos/bloqueos/{id}",
+          "descripcion": "Quita un bloqueo; el registro se conserva para histórico.\n1/1 funciona.",
+          "estado": "Completado",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-11",
+          "metodo": "FEATURE",
+          "rutaONombre": "Acción Aplicar",
+          "descripcion": "Aplicar CTGs a un negocio.",
+          "estado": "Completado",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-12",
+          "metodo": "FEATURE",
+          "rutaONombre": "Bloqueo / Sin contrato",
+          "descripcion": "Marcar descargas como bloqueadas o sin contrato.",
+          "estado": "Completado",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-13",
+          "metodo": "FEATURE",
+          "rutaONombre": "Desbloqueo / Deshacer sin contrato CTGs",
+          "descripcion": "Revertir el bloqueo o la marca sin contrato de CTGs.\nPendiente: pedido, esperando entrega.",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-14",
+          "metodo": "FEATURE",
+          "rutaONombre": "Datos duplicados",
+          "descripcion": "Evitar registros duplicados en los listados.",
+          "estado": "Completado",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-15",
+          "metodo": "FEATURE",
+          "rutaONombre": "Acción de desaplicar CTGs",
+          "descripcion": "Desaplicar CTGs de un negocio.",
+          "estado": "Completado",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-16",
+          "metodo": "FEATURE",
+          "rutaONombre": "Acción Aplicar en batch",
+          "descripcion": "Aplicar varios CTGs en una sola operación.",
+          "estado": "Completado",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-17",
+          "metodo": "FEATURE",
+          "rutaONombre": "Descargas / Contratos no paginados",
+          "descripcion": "Obtener descargas y contratos sin paginación.\nFunciona, falta implementar en el front.",
+          "estado": "En Progreso",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-18",
+          "metodo": "FEATURE",
+          "rutaONombre": "Descargas = Sólo aplicables",
+          "descripcion": "El listado de descargas devuelve solo las aplicables.",
+          "estado": "Completado",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-19",
+          "metodo": "FEATURE",
+          "rutaONombre": "Total descargas",
+          "descripcion": "Obtener el total de descargas (todas) respetando los filtros.\nPendiente: pedido, esperando entrega.",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-20",
+          "metodo": "FEATURE",
+          "rutaONombre": "Tooltip negocios",
+          "descripcion": "Tooltip con datos del negocio.\nPendiente: negocios/live no devuelve datos en TACI.",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-21",
+          "metodo": "FEATURE",
+          "rutaONombre": "Acción de bloqueo de contrato",
+          "descripcion": "Bloquear / desbloquear contratos desde la aplicación usando los endpoints de bloqueos.\nFunciona, falta implementar (los endpoints antes devolvían 404).",
+          "estado": "En Progreso",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-22",
+          "metodo": "FEATURE",
+          "rutaONombre": "Listado de CTGs aplicados a un Negocio",
+          "descripcion": "Listar los CTGs aplicados a un negocio.",
+          "estado": "Completado",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-23",
+          "metodo": "FEATURE",
+          "rutaONombre": "Modificación PP para CTGs",
+          "descripcion": "Modificar el flag Propia Producción (SI / NO) de CTGs.\nPendiente: pedido, esperando entrega.\nSe espera poder marcar (POST) las descargas que son propia producción (PP) y leer luego la marca (GET). Adicionalmente se requiere poder filtrar esta columna.",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-24",
+          "metodo": "FEATURE",
+          "rutaONombre": "Filtro múltiple para Granos",
+          "descripcion": "Filtrar por varios granos en Descargas y Contratos.\nPendiente: pedido, esperando entrega.",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-25",
+          "metodo": "POST",
+          "rutaONombre": "Envío y guardado flag automatización en aplicación",
+          "descripcion": "El endpoint de aplicación debe guardar el flag de automatización en TRUE.\nPendiente: pedido, esperando entrega.",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-26",
+          "metodo": "FEATURE",
+          "rutaONombre": "Flag de automatización en histórico",
+          "descripcion": "Flag filtrable en el histórico; marca todo el contrato.\nPendiente: pedido, esperando entrega.",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-27",
+          "metodo": "FEATURE",
+          "rutaONombre": "Flag de automatización en descargas",
+          "descripcion": "Flag devuelto por la API de descargas, filtrable, para identificar las no aplicadas.\nPendiente: pedido, esperando entrega.",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-28",
+          "metodo": "POST",
+          "rutaONombre": "POST automatización exclusión",
+          "descripcion": "Marcar contratos como excluidos de la automatización.\nPendiente: pedido, esperando entrega.",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-906-ep-29",
+          "metodo": "GET",
+          "rutaONombre": "GET descargas (lista total)",
+          "descripcion": "El flag de excluido llega en la API de contratos y es filtrable.\nSe espera que la API devuelva el total de las descargas (las controladas y no por CyE con la posibilidad de filtrar internamente). Actualmente solo trae las ya controladas.\nPendiente: pedido, esperando entrega.",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        }
+      ]
+    },
     {
       "id": "peg-256",
       "nombre": "Velocidad operativa puertos",
@@ -15,6 +324,7 @@
         "Backoffice"
       ],
       "estadoGeneral": "Planificada",
+      "prioridad": "Alta",
       "fechaEstimadaEntrega": "",
       "endpointsFeatures": []
     },
@@ -32,6 +342,7 @@
         "B ackoffice"
       ],
       "estadoGeneral": "En Desarrollo",
+      "prioridad": "Alta",
       "fechaEstimadaEntrega": "2026-10-29",
       "endpointsFeatures": [
         {
@@ -40,6 +351,7 @@
           "rutaONombre": "Camiones en puertos",
           "descripcion": "",
           "estado": "Pendiente",
+          "prioridad": "Media",
           "responsableFeature": "",
           "fechaEstimada": "2026-10-29"
         },
@@ -49,6 +361,7 @@
           "rutaONombre": "Cambio de estado en puerto",
           "descripcion": "Aprobar y rechazar pasar camiones a condicional o rechazado desde el portal, sin la necesidad de tener que hacerlo desde el sistema de pesaje",
           "estado": "Pendiente",
+          "prioridad": "Media",
           "responsableFeature": "",
           "fechaEstimada": "2026-10-29"
         },
@@ -58,6 +371,7 @@
           "rutaONombre": "Estados en puerto",
           "descripcion": "Todos los estados por los que pasa un camión en el puerto (dentro y fuera de calado)",
           "estado": "Pendiente",
+          "prioridad": "Media",
           "responsableFeature": "",
           "fechaEstimada": "2026-10-29"
         },
@@ -67,6 +381,7 @@
           "rutaONombre": "Fila en puerto",
           "descripcion": "",
           "estado": "Pendiente",
+          "prioridad": "Media",
           "responsableFeature": "",
           "fechaEstimada": "2026-10-29"
         }
@@ -85,6 +400,7 @@
         "Backoffice"
       ],
       "estadoGeneral": "Planificada",
+      "prioridad": "Baja",
       "fechaEstimadaEntrega": "2026-10-28",
       "endpointsFeatures": []
     },
@@ -101,6 +417,7 @@
         "backoffice"
       ],
       "estadoGeneral": "En Desarrollo",
+      "prioridad": "Media",
       "fechaEstimadaEntrega": "2026-10-28",
       "endpointsFeatures": []
     },
@@ -117,6 +434,7 @@
         "Backoffice"
       ],
       "estadoGeneral": "En Desarrollo",
+      "prioridad": "Media",
       "fechaEstimadaEntrega": "2026-10-28",
       "endpointsFeatures": []
     },
@@ -134,6 +452,7 @@
         "Agronegocios"
       ],
       "estadoGeneral": "En Producción",
+      "prioridad": "Baja",
       "fechaEstimadaEntrega": "",
       "endpointsFeatures": []
     },
@@ -150,287 +469,9 @@
         "Backoffice"
       ],
       "estadoGeneral": "En Desarrollo",
+      "prioridad": "Media",
       "fechaEstimadaEntrega": "",
       "endpointsFeatures": []
-    },
-    {
-      "id": "agn-906",
-      "nombre": "Aplicaciones (API descargas)",
-      "contexto": "",
-      "responsable": {
-        "nombre": "Julian veron",
-        "rol": "Luciano Scaiano"
-      },
-      "desarrolloAfectado": [
-        "TACI",
-        "Backoffice",
-        "Agronegocios"
-      ],
-      "estadoGeneral": "En Desarrollo",
-      "fechaEstimadaEntrega": "2026-12-25",
-      "endpointsFeatures": [
-        {
-          "id": "agn-906-ep-01",
-          "metodo": "GET",
-          "rutaONombre": "/api/Descargas",
-          "descripcion": "Listado de descargas (tablas Descargas y Cartas Porte) con filtros y orden por columna.\nPendiente: filtro Fecha de Salida, Planta por nombre (hoy solo número), Zona multi-valor, Estado (BLOQUEADO / SIN CONTRATO / OK), Corredor (no llega el dato); Propia producción falta implementar.\n35/43 funciona.",
-          "estado": "En Progreso",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-02",
-          "metodo": "GET",
-          "rutaONombre": "/api/Descargas/{id}",
-          "descripcion": "Detalle de carta de porte (endpoint a crear). Hoy el detalle se arma desde el listado con pageSize=1 y el CTG no es único.\nPendiente: Comprobante, estado Puerto/Calada, Cargador, Rte. Comercial, datos de transporte y flete, Silos, Vale, Recibo, servicios, Tara, desglose de mermas, Temperatura, intervinientes, análisis y honorarios. En validación: Destinatario y Corredor Comprador.\n23/74 funciona.",
-          "estado": "En Progreso",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-03",
-          "metodo": "GET",
-          "rutaONombre": "/api/Contratos",
-          "descripcion": "Listado de contratos con filtros y orden por columna.\nPendiente: Moneda, Cont. Comprador (no llega el dato), Zona multi-valor, Estado de bloqueo del contrato, Corredor; Grano falta implementar.\n30/39 funciona.",
-          "estado": "En Progreso",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-04",
-          "metodo": "GET",
-          "rutaONombre": "/api/v1/negocios/detalle",
-          "descripcion": "Detalle de negocio (cabecera, tablas y secciones).\nPendiente: Pago, Comisión, Cont. Comprador, Correl. DGI; tablas Ampliaciones/Reducciones, Órdenes de Fijar y Cláusulas; secciones Cupos, Entregas, Condiciones, Garantías, Certificados, Resumen de Cuenta y Comprobantes IVA; paginación y orderBy server-side. En validación: HC, totales de cabecera y resumenCalidad.\n41/81 funciona.",
-          "estado": "En Progreso",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-05",
-          "metodo": "FEATURE",
-          "rutaONombre": "Sección Aplicado — Negocios",
-          "descripcion": "Tabla de negocios con CTGs aplicados (filtros y orden).\nPendiente: Cont. Comprador, TT Aplicada y TT a desaplicar (filtro), CTG y Zona (no llega el dato).\n9/16 funciona.",
-          "estado": "En Progreso",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-06",
-          "metodo": "FEATURE",
-          "rutaONombre": "Sección Aplicado — CTGs (filtros)",
-          "descripcion": "Tabla de CTGs aplicados con filtros y orden.\nPendiente: filtro Grano, Corredor, Zona; Fecha requiere rango por fechaMovimiento; orden por Estado falta implementar. En validación: orden por Moneda.\n32/39 funciona.",
-          "estado": "En Progreso",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-07",
-          "metodo": "GET",
-          "rutaONombre": "/api/v1/contratos/bloqueos/estado",
-          "descripcion": "Indica si un contrato está bloqueado (devuelve bloqueado e idBloqueo).\n1/1 funciona.",
-          "estado": "Completado",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-08",
-          "metodo": "GET",
-          "rutaONombre": "/api/v1/contratos/bloqueos",
-          "descripcion": "Lista bloqueos filtrando por activo (true / false / todos), paginado.\n1/1 funciona.",
-          "estado": "Completado",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-09",
-          "metodo": "POST",
-          "rutaONombre": "/api/v1/contratos/bloqueos",
-          "descripcion": "Registra un bloqueo de contrato (uniNego, contInterno, contrato, motivo).\n1/1 funciona.",
-          "estado": "Completado",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-10",
-          "metodo": "DELETE",
-          "rutaONombre": "/api/v1/contratos/bloqueos/{id}",
-          "descripcion": "Quita un bloqueo; el registro se conserva para histórico.\n1/1 funciona.",
-          "estado": "Completado",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-11",
-          "metodo": "FEATURE",
-          "rutaONombre": "Acción Aplicar",
-          "descripcion": "Aplicar CTGs a un negocio.",
-          "estado": "Completado",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-12",
-          "metodo": "FEATURE",
-          "rutaONombre": "Bloqueo / Sin contrato",
-          "descripcion": "Marcar descargas como bloqueadas o sin contrato.",
-          "estado": "Completado",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-13",
-          "metodo": "FEATURE",
-          "rutaONombre": "Desbloqueo / Deshacer sin contrato CTGs",
-          "descripcion": "Revertir el bloqueo o la marca sin contrato de CTGs.\nPendiente: pedido, esperando entrega.",
-          "estado": "Pendiente",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-14",
-          "metodo": "FEATURE",
-          "rutaONombre": "Datos duplicados",
-          "descripcion": "Evitar registros duplicados en los listados.",
-          "estado": "Completado",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-15",
-          "metodo": "FEATURE",
-          "rutaONombre": "Acción de desaplicar CTGs",
-          "descripcion": "Desaplicar CTGs de un negocio.",
-          "estado": "Completado",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-16",
-          "metodo": "FEATURE",
-          "rutaONombre": "Acción Aplicar en batch",
-          "descripcion": "Aplicar varios CTGs en una sola operación.",
-          "estado": "Completado",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-17",
-          "metodo": "FEATURE",
-          "rutaONombre": "Descargas / Contratos no paginados",
-          "descripcion": "Obtener descargas y contratos sin paginación.\nFunciona, falta implementar en el front.",
-          "estado": "En Progreso",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-18",
-          "metodo": "FEATURE",
-          "rutaONombre": "Descargas = Sólo aplicables",
-          "descripcion": "El listado de descargas devuelve solo las aplicables.",
-          "estado": "Completado",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-19",
-          "metodo": "FEATURE",
-          "rutaONombre": "Total descargas",
-          "descripcion": "Obtener el total de descargas (todas) respetando los filtros.\nPendiente: pedido, esperando entrega.",
-          "estado": "Pendiente",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-20",
-          "metodo": "FEATURE",
-          "rutaONombre": "Tooltip negocios",
-          "descripcion": "Tooltip con datos del negocio.\nPendiente: negocios/live no devuelve datos en TACI.",
-          "estado": "Pendiente",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-21",
-          "metodo": "FEATURE",
-          "rutaONombre": "Acción de bloqueo de contrato",
-          "descripcion": "Bloquear / desbloquear contratos desde la aplicación usando los endpoints de bloqueos.\nFunciona, falta implementar (los endpoints antes devolvían 404).",
-          "estado": "En Progreso",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-22",
-          "metodo": "FEATURE",
-          "rutaONombre": "Listado de CTGs aplicados a un Negocio",
-          "descripcion": "Listar los CTGs aplicados a un negocio.",
-          "estado": "Completado",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-23",
-          "metodo": "FEATURE",
-          "rutaONombre": "Modificación PP para CTGs",
-          "descripcion": "Modificar el flag Propia Producción (SI / NO) de CTGs.\nPendiente: pedido, esperando entrega.\nSe espera poder marcar (POST) las descargas que son propia producción (PP) y leer luego la marca (GET). Adicionalmente se requiere poder filtrar esta columna.",
-          "estado": "Pendiente",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-24",
-          "metodo": "FEATURE",
-          "rutaONombre": "Filtro múltiple para Granos",
-          "descripcion": "Filtrar por varios granos en Descargas y Contratos.\nPendiente: pedido, esperando entrega.",
-          "estado": "Pendiente",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-25",
-          "metodo": "POST",
-          "rutaONombre": "Envío y guardado flag automatización en aplicación",
-          "descripcion": "El endpoint de aplicación debe guardar el flag de automatización en TRUE.\nPendiente: pedido, esperando entrega.",
-          "estado": "Pendiente",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-26",
-          "metodo": "FEATURE",
-          "rutaONombre": "Flag de automatización en histórico",
-          "descripcion": "Flag filtrable en el histórico; marca todo el contrato.\nPendiente: pedido, esperando entrega.",
-          "estado": "Pendiente",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-27",
-          "metodo": "FEATURE",
-          "rutaONombre": "Flag de automatización en descargas",
-          "descripcion": "Flag devuelto por la API de descargas, filtrable, para identificar las no aplicadas.\nPendiente: pedido, esperando entrega.",
-          "estado": "Pendiente",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-28",
-          "metodo": "POST",
-          "rutaONombre": "POST automatización exclusión",
-          "descripcion": "Marcar contratos como excluidos de la automatización.\nPendiente: pedido, esperando entrega.",
-          "estado": "Pendiente",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        },
-        {
-          "id": "agn-906-ep-29",
-          "metodo": "GET",
-          "rutaONombre": "GET descargas (lista total)",
-          "descripcion": "El flag de excluido llega en la API de contratos y es filtrable.\nSe espera que la API devuelva el total de las descargas (las controladas y no por CyE con la posibilidad de filtrar internamente). Actualmente solo trae las ya controladas.\nPendiente: pedido, esperando entrega.",
-          "estado": "Pendiente",
-          "responsableFeature": "",
-          "fechaEstimada": ""
-        }
-      ]
     },
     {
       "id": "peg-170",
@@ -446,6 +487,7 @@
         "Puertos"
       ],
       "estadoGeneral": "Planificada",
+      "prioridad": "Media",
       "fechaEstimadaEntrega": "",
       "endpointsFeatures": []
     }
