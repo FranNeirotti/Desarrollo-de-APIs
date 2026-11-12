@@ -1,5 +1,5 @@
 {
-  "$comentario": "Configuración de la sincronización data/apis.json -> Jira. El ticket de cada API es su campo id en mayúsculas (agn-906 -> AGN-906). Las credenciales NO van acá: se leen de los secrets JIRA_BASE_URL, JIRA_EMAIL y JIRA_API_TOKEN.",
+  "$comentario": "Configuración de la sincronización data/apis.json -> Jira. El ticket de cada API es su campo id en mayúsculas (agn-906 -> AGN-906). Las credenciales se leen de los secrets JIRA_BASE_URL, JIRA_EMAIL y JIRA_API_TOKEN.",
   "enabled": true,
   "comment": true,
   "transitions": true,
