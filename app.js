@@ -888,6 +888,313 @@
     return d ? d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
   }
 
+  // ---------------------------------------------------------------------------
+  // Campo de fecha (DS Date picker, variante "Input de formulario": input + calendario)
+  // Muestra dd/mm/aaaa y guarda YYYY-MM-DD en el input oculto del formulario.
+  // ---------------------------------------------------------------------------
+  const MESES_LARGOS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  const DATE_ERROR = 'Fecha inválida. Usá el formato dd/mm/aaaa.';
+  const dp = { field: null, month: null, focus: '', escAt: 0 };
+
+  function fmtDMY(iso) {
+    const d = parseDate(iso);
+    return d ? `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}` : '';
+  }
+
+  // '' si está vacío, null si es inválido, YYYY-MM-DD si es válido. Acepta dd/mm/aaaa, d-m-aaaa, ddmmaaaa y aaaa-mm-dd.
+  function parseDMY(s) {
+    const v = String(s || '').trim();
+    if (!v) return '';
+    let y; let mo; let d;
+    let m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (m) [, y, mo, d] = m;
+    else {
+      m = v.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/) || v.match(/^(\d{2})(\d{2})(\d{4})$/);
+      if (!m) return null;
+      [, d, mo, y] = m;
+    }
+    [y, mo, d] = [Number(y), Number(mo), Number(d)];
+    const dt = new Date(y, mo - 1, d);
+    if (y < 1900 || y > 2100 || dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return null;
+    return toISO(dt);
+  }
+
+  // Inserta las barras mientras se tipea (solo al escribir al final, sin pisar borrados).
+  function maskDateInput(input, ev) {
+    if (ev && ev.inputType && !ev.inputType.startsWith('insert')) return;
+    const v = input.value;
+    if (!/^[\d/]*$/.test(v) || input.selectionStart !== v.length) return;
+    const dg = v.replace(/\D/g, '').slice(0, 8);
+    let out = dg.slice(0, 2);
+    if (dg.length > 2 || (dg.length === 2 && v.length >= 2)) out += `/${dg.slice(2, 4)}`;
+    if (dg.length > 4 || (dg.length === 4 && v.length >= 5)) out += `/${dg.slice(4)}`;
+    if (out !== v) input.value = out;
+  }
+
+  const dateParts = (field) => ({
+    text: $('.date-input', field),
+    hidden: $('input[type="hidden"]', field),
+    clear: $('[data-date-clear]', field),
+    open: $('[data-date-open]', field),
+  });
+
+  function setDateError(field, msg) {
+    const { text } = dateParts(field);
+    const box = document.getElementById(text.getAttribute('aria-describedby'));
+    if (msg) text.setAttribute('aria-invalid', 'true');
+    else text.removeAttribute('aria-invalid');
+    if (box) {
+      box.textContent = msg;
+      box.hidden = !msg;
+    }
+  }
+
+  function setDateField(field, iso) {
+    const { text, hidden, clear } = dateParts(field);
+    const v = parseDate(iso) ? iso : '';
+    hidden.value = v;
+    text.value = fmtDMY(v);
+    clear.hidden = !v;
+    setDateError(field, '');
+  }
+
+  // Pasa el texto tipeado al valor del formulario. Devuelve false si la fecha es inválida.
+  function commitDateField(field) {
+    const { text, hidden, clear } = dateParts(field);
+    const iso = parseDMY(text.value);
+    if (iso === null) {
+      hidden.value = '';
+      clear.hidden = !text.value;
+      setDateError(field, DATE_ERROR);
+      return false;
+    }
+    setDateField(field, iso);
+    return true;
+  }
+
+  function datePop() {
+    let pop = $('#date-pop');
+    if (!pop) {
+      pop = document.createElement('div');
+      pop.id = 'date-pop';
+      pop.className = 'date-pop';
+      pop.setAttribute('role', 'dialog');
+      pop.setAttribute('aria-label', 'Elegir fecha');
+      pop.hidden = true;
+      bindDatePop(pop);
+    }
+    return pop;
+  }
+
+  function openDatePop(field) {
+    closeDatePop(false);
+    commitDateField(field);
+    const base = parseDate(dateParts(field).hidden.value) || today();
+    dp.field = field;
+    dp.month = new Date(base.getFullYear(), base.getMonth(), 1);
+    dp.focus = toISO(base);
+    const pop = datePop();
+    (field.closest('dialog') || document.body).appendChild(pop);
+    pop.hidden = false;
+    field.classList.add('is-open');
+    dateParts(field).open.setAttribute('aria-expanded', 'true');
+    renderDateCal();
+    positionDatePop();
+    focusDateDay();
+  }
+
+  function closeDatePop(returnFocus) {
+    const field = dp.field;
+    if (!field) return;
+    dp.field = null;
+    datePop().hidden = true;
+    field.classList.remove('is-open');
+    dateParts(field).open.setAttribute('aria-expanded', 'false');
+    if (returnFocus) dateParts(field).text.focus();
+  }
+
+  function renderDateCal() {
+    const m = dp.month;
+    const sel = dateParts(dp.field).hidden.value;
+    const todayIso = toISO(today());
+    const monthKey = toISO(m).slice(0, 7);
+    if (dp.focus.slice(0, 7) !== monthKey) dp.focus = sel.slice(0, 7) === monthKey ? sel : toISO(m);
+    const offset = (m.getDay() + 6) % 7;
+    let cells = '';
+    for (let i = 0; i < 42; i += 1) {
+      const d = new Date(m.getFullYear(), m.getMonth(), 1 - offset + i);
+      const iso = toISO(d);
+      const cls = ['dcal-day'];
+      if (iso.slice(0, 7) !== monthKey) cls.push('is-out');
+      if (iso === todayIso) cls.push('is-today');
+      if (iso === sel) cls.push('is-selected');
+      const label = d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      cells += `<button type="button" class="${cls.join(' ')}" data-dcal-day="${iso}" aria-label="${esc(label)}${iso === todayIso ? ' (hoy)' : ''}"
+        aria-pressed="${iso === sel}"${iso === todayIso ? ' aria-current="date"' : ''} tabindex="${iso === dp.focus ? 0 : -1}">${d.getDate()}</button>`;
+    }
+    const title = `${MESES_LARGOS[m.getMonth()]} ${m.getFullYear()}`;
+    datePop().innerHTML = `
+      <div class="dcal-head">
+        <span class="dcal-title" aria-live="polite">${title}</span>
+        <span class="dcal-nav">
+          <button type="button" class="dcal-btn" data-dcal-nav="-1" aria-label="Mes anterior">${icn('chevron_left')}</button>
+          <button type="button" class="dcal-btn" data-dcal-nav="1" aria-label="Mes siguiente">${icn('chevron_right')}</button>
+        </span>
+      </div>
+      <div class="dcal-grid" role="group" aria-label="${title}">
+        ${DIAS_SEMANA.map((d) => `<span class="dcal-wd" aria-hidden="true">${d}</span>`).join('')}
+        ${cells}
+      </div>
+      <div class="dcal-foot">
+        <button type="button" class="pop-link" data-dcal-today>Hoy</button>
+        <button type="button" class="pop-link" data-dcal-clear${sel ? '' : ' disabled'}>Borrar fecha</button>
+      </div>`;
+  }
+
+  function focusDateDay() {
+    const btn = $(`#date-pop [data-dcal-day="${dp.focus}"]`);
+    if (btn) btn.focus();
+  }
+
+  function positionDatePop() {
+    if (!dp.field) return;
+    const pop = datePop();
+    const r = dp.field.getBoundingClientRect();
+    const m = 8;
+    const w = pop.offsetWidth;
+    const h = pop.offsetHeight;
+    let top = r.bottom + 4;
+    if (top + h > window.innerHeight - m && r.top - 4 - h >= m) top = r.top - 4 - h;
+    top = Math.max(m, Math.min(top, window.innerHeight - h - m));
+    const left = Math.max(m, Math.min(r.left, window.innerWidth - w - m));
+    pop.style.top = `${Math.round(top)}px`;
+    pop.style.left = `${Math.round(left)}px`;
+  }
+
+  function pickDate(iso) {
+    const field = dp.field;
+    setDateField(field, iso);
+    closeDatePop(true);
+    announce(iso ? `Fecha seleccionada: ${fmtDMY(iso)}` : 'Fecha borrada');
+  }
+
+  function moveDateFocus(next) {
+    dp.focus = toISO(next);
+    dp.month = new Date(next.getFullYear(), next.getMonth(), 1);
+    renderDateCal();
+    focusDateDay();
+  }
+
+  function bindDatePop(pop) {
+    pop.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      if (!dp.field) return;
+      const day = ev.target.closest('[data-dcal-day]');
+      if (day) { pickDate(day.dataset.dcalDay); return; }
+      const nav = ev.target.closest('[data-dcal-nav]');
+      if (nav) {
+        const n = Number(nav.dataset.dcalNav);
+        dp.month = new Date(dp.month.getFullYear(), dp.month.getMonth() + n, 1);
+        renderDateCal();
+        const again = $(`#date-pop [data-dcal-nav="${n}"]`);
+        if (again) again.focus();
+        return;
+      }
+      if (ev.target.closest('[data-dcal-today]')) pickDate(toISO(today()));
+      else if (ev.target.closest('[data-dcal-clear]')) pickDate('');
+    });
+    pop.addEventListener('keydown', (ev) => {
+      if (!dp.field) return;
+      if (ev.key === 'Escape') {
+        ev.preventDefault();
+        ev.stopPropagation();
+        dp.escAt = Date.now();
+        closeDatePop(true);
+        return;
+      }
+      const day = ev.target.closest('[data-dcal-day]');
+      if (!day) return;
+      const d = parseDate(day.dataset.dcalDay);
+      const dow = (d.getDay() + 6) % 7;
+      const moves = {
+        ArrowLeft: () => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1),
+        ArrowRight: () => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1),
+        ArrowUp: () => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7),
+        ArrowDown: () => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7),
+        Home: () => new Date(d.getFullYear(), d.getMonth(), d.getDate() - dow),
+        End: () => new Date(d.getFullYear(), d.getMonth(), d.getDate() + 6 - dow),
+        PageUp: () => new Date(d.getFullYear(), d.getMonth() - 1, Math.min(d.getDate(), 28)),
+        PageDown: () => new Date(d.getFullYear(), d.getMonth() + 1, Math.min(d.getDate(), 28)),
+      };
+      if (moves[ev.key]) {
+        ev.preventDefault();
+        moveDateFocus(moves[ev.key]());
+      }
+    });
+    pop.addEventListener('focusout', (ev) => {
+      const to = ev.relatedTarget;
+      if (dp.field && to && !pop.contains(to) && !dp.field.contains(to)) closeDatePop(false);
+    });
+  }
+
+  function bindDateFields() {
+    document.addEventListener('click', (ev) => {
+      const field = ev.target.closest('.date-field');
+      if (dp.field && !ev.target.closest('#date-pop') && field !== dp.field) closeDatePop(false);
+      if (!field) return;
+      if (ev.target.closest('[data-date-open]')) {
+        if (dp.field === field) closeDatePop(true);
+        else openDatePop(field);
+      } else if (ev.target.closest('[data-date-clear]')) {
+        closeDatePop(false);
+        setDateField(field, '');
+        dateParts(field).text.focus();
+      }
+    });
+    document.addEventListener('input', (ev) => {
+      const text = ev.target.closest('.date-field .date-input');
+      if (!text) return;
+      maskDateInput(text, ev);
+      const field = text.closest('.date-field');
+      dateParts(field).clear.hidden = !text.value;
+      if (text.getAttribute('aria-invalid') && parseDMY(text.value) !== null) setDateError(field, '');
+    });
+    document.addEventListener('change', (ev) => {
+      const text = ev.target.closest('.date-field .date-input');
+      if (!text) return;
+      const field = text.closest('.date-field');
+      commitDateField(field);
+      if (dp.field === field) renderDateCal();
+    });
+    document.addEventListener('keydown', (ev) => {
+      const text = ev.target.closest && ev.target.closest('.date-field .date-input');
+      if (!text) return;
+      const field = text.closest('.date-field');
+      if (ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        openDatePop(field);
+      } else if (ev.key === 'Escape' && dp.field === field) {
+        ev.preventDefault();
+        dp.escAt = Date.now();
+        closeDatePop(true);
+      } else if (ev.key === 'Enter') {
+        commitDateField(field);
+      }
+    });
+    // Esc con el calendario abierto cierra solo el calendario, no el modal.
+    $$('dialog').forEach((dlg) => {
+      dlg.addEventListener('cancel', (ev) => {
+        if (dp.field || Date.now() - dp.escAt < 300) {
+          ev.preventDefault();
+          closeDatePop(true);
+        }
+      });
+      dlg.addEventListener('close', () => closeDatePop(false));
+    });
+    window.addEventListener('resize', positionDatePop);
+    window.addEventListener('scroll', positionDatePop, true);
+  }
+
   function estadoLabel(v) {
     return v.startsWith(EP_FILTER_PREFIX) ? `Endpoints: ${v.slice(EP_FILTER_PREFIX.length)}` : v;
   }
@@ -1056,8 +1363,8 @@
       </div>
       <div class="cal" id="pop-cal"></div>
       <div class="pop-range">
-        <label>Desde<input type="date" data-range="desde" value="${esc(p.desde)}"></label>
-        <label>Hasta<input type="date" data-range="hasta" value="${esc(p.hasta)}"></label>
+        <label>Desde<span class="range-input"><input type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" data-range="desde" value="${esc(fmtDMY(p.desde))}">${icn('calendar_month')}</span></label>
+        <label>Hasta<span class="range-input"><input type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" data-range="hasta" value="${esc(fmtDMY(p.hasta))}">${icn('calendar_month')}</span></label>
       </div>
       <div class="pop-foot">
         <button type="button" class="pop-link" data-date-clear>Limpiar</button>
@@ -1099,8 +1406,11 @@
         ${cells}
       </div>`;
     const pop = $('#filter-pop');
-    pop.querySelector('[data-range="desde"]').value = p.desde;
-    pop.querySelector('[data-range="hasta"]').value = p.hasta;
+    ['desde', 'hasta'].forEach((k) => {
+      const inp = pop.querySelector(`[data-range="${k}"]`);
+      inp.value = fmtDMY(p[k]);
+      inp.removeAttribute('aria-invalid');
+    });
   }
 
   function setCalMonth(d) {
@@ -1179,6 +1489,7 @@
     });
     pop.addEventListener('input', (ev) => {
       if (state.pop && ev.target.closest('.pop-search')) renderListPop(ev.target.value);
+      if (state.pop && ev.target.dataset.range) maskDateInput(ev.target, ev);
     });
     pop.addEventListener('change', (ev) => {
       if (!state.pop) return;
@@ -1186,7 +1497,14 @@
       const which = ev.target.dataset.range;
       if (which) {
         const p = state.pop;
-        p[which] = parseDate(ev.target.value) ? ev.target.value : '';
+        const iso = parseDMY(ev.target.value);
+        if (iso === null) {
+          ev.target.setAttribute('aria-invalid', 'true');
+          ev.target.title = DATE_ERROR;
+          return;
+        }
+        p[which] = iso;
+        ev.target.removeAttribute('title');
         if (p.desde && p.hasta && p.desde > p.hasta) [p.desde, p.hasta] = [p.hasta, p.desde];
         const d = parseDate(p[which]);
         if (d) { setCalMonth(d); p.focusDay = p[which]; }
@@ -1515,7 +1833,7 @@
     form.elements.desarrolloAfectado.value = api ? api.desarrolloAfectado.join(', ') : '';
     form.elements.estadoGeneral.value = api ? api.estadoGeneral : 'Planificada';
     form.elements.prioridad.value = api ? api.prioridad : PRIORIDAD_DEFAULT;
-    form.elements.fechaEstimadaEntrega.value = api ? api.fechaEstimadaEntrega : '';
+    setDateField($('#api-fecha').closest('.date-field'), api ? api.fechaEstimadaEntrega : '');
     $('#modal-api').showModal();
     (api ? form.elements.nombre : form.elements.id).focus();
   }
@@ -1528,6 +1846,7 @@
     const id = str(el.id.value);
     const nombre = str(el.nombre.value);
     const respNombre = str(el.responsableNombre.value);
+    const fechaOk = commitDateField($('#api-fecha').closest('.date-field'));
     const fecha = str(el.fechaEstimadaEntrega.value);
 
     let error = '';
@@ -1537,7 +1856,7 @@
     else if (!respNombre) error = 'El responsable es obligatorio.';
     else if (!ESTADOS_API.includes(el.estadoGeneral.value)) error = 'Seleccioná un estado válido.';
     else if (!PRIORIDADES.includes(el.prioridad.value)) error = 'Seleccioná una prioridad válida.';
-    else if (fecha && !parseDate(fecha)) error = 'La fecha estimada no es válida (YYYY-MM-DD).';
+    else if (!fechaOk || (fecha && !parseDate(fecha))) error = 'La fecha estimada de entrega no es válida. Usá el formato dd/mm/aaaa.';
     if (error) { errBox.textContent = error; return; }
 
     const existing = originalId ? findApi(originalId) : null;
@@ -1619,7 +1938,7 @@
     form.elements.descripcion.value = ep ? ep.descripcion : '';
     form.elements.estado.value = ep ? ep.estado : 'Pendiente';
     form.elements.prioridad.value = ep ? ep.prioridad : PRIORIDAD_DEFAULT;
-    form.elements.fechaEstimada.value = ep ? ep.fechaEstimada : (api.fechaEstimadaEntrega || '');
+    setDateField($('#ep-fecha').closest('.date-field'), ep ? ep.fechaEstimada : (api.fechaEstimadaEntrega || ''));
     form.elements.responsableFeature.value = ep ? ep.responsableFeature : '';
     form.elements.responsableFeature.placeholder = `Vacío = hereda "${api.responsable.nombre || 'responsable de la API'}"`;
     $('#modal-endpoint').showModal();
@@ -1635,6 +1954,7 @@
     const originalId = el.originalId.value;
     const id = str(el.id.value);
     const ruta = str(el.rutaONombre.value);
+    const fechaOk = commitDateField($('#ep-fecha').closest('.date-field'));
     const fecha = str(el.fechaEstimada.value);
 
     let error = '';
@@ -1644,7 +1964,7 @@
     else if (!ruta) error = 'La ruta o nombre es obligatoria.';
     else if (!ESTADOS_EP.includes(el.estado.value)) error = 'Seleccioná un estado válido.';
     else if (!PRIORIDADES.includes(el.prioridad.value)) error = 'Seleccioná una prioridad válida.';
-    else if (fecha && !parseDate(fecha)) error = 'La fecha estimada no es válida (YYYY-MM-DD).';
+    else if (!fechaOk || (fecha && !parseDate(fecha))) error = 'La fecha estimada no es válida. Usá el formato dd/mm/aaaa.';
     if (error) { errBox.textContent = error; return; }
 
     const ep = {
@@ -2017,6 +2337,7 @@
       }
     });
     bindFilterPop();
+    bindDateFields();
 
     $('#f-search').addEventListener('input', renderAll);
 

@@ -653,7 +653,7 @@ h1, h2, h3, h4 { margin: 0; line-height: 1.2; color: var(--fg-1); }
 }
 .cal-day.is-out { color: var(--fg-3); font-weight: 400; }
 .cal-day:hover { background: var(--primario-25); border-radius: 6px; }
-.cal-day.is-today { text-decoration: underline; text-underline-offset: 3px; }
+.cal-day.is-today { box-shadow: inset 0 0 0 1.5px var(--accent); border-radius: 6px; }
 .cal-day.in-range { background: var(--primario-50); }
 .cal-day.in-range:nth-child(7n + 1) { border-radius: 6px 0 0 6px; }
 .cal-day.in-range:nth-child(7n) { border-radius: 0 6px 6px 0; }
@@ -661,7 +661,9 @@ h1, h2, h3, h4 { margin: 0; line-height: 1.2; color: var(--fg-1); }
 .cal-day:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--accent); border-radius: 6px; }
 .pop-range { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .pop-range label { display: flex; flex-direction: column; gap: 8px; font: 600 14px/1 var(--font-sans); color: var(--fg-1); }
-.pop-range input { height: 40px; }
+.pop-range input { height: 40px; padding-right: 40px; font-variant-numeric: tabular-nums; }
+.range-input { position: relative; display: block; }
+.range-input .ms { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 20px; color: var(--fg-3); pointer-events: none; }
 .pop-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .pop-foot .btn { height: 40px; padding: 0 20px; }
 .pop-link {
@@ -706,7 +708,95 @@ select {
   cursor: pointer;
 }
 textarea { height: auto; min-height: 80px; padding: 10px 16px; resize: vertical; line-height: 1.4; }
-input[type="date"] { cursor: text; }
+
+/* ---------- Campo de fecha (DS Date picker · input de formulario) ---------- */
+.date-field { position: relative; display: flex; align-items: center; }
+.date-field .date-input { padding-right: 80px; font-variant-numeric: tabular-nums; }
+.date-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--fg-2);
+  cursor: pointer;
+}
+.date-btn[hidden] { display: none; }
+.date-btn .ms { font-size: 20px; }
+.date-open { right: 4px; }
+.date-clear { right: 38px; color: var(--fg-3); }
+.date-btn:hover { background: var(--primario-50); color: var(--fg-1); }
+.date-btn:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--border-focus); }
+.date-field.is-open .date-input { background-color: var(--bg-surface); border-color: var(--border-focus); box-shadow: var(--sombra-focus); }
+.date-field.is-open .date-open { color: var(--brand); background: var(--primario-50); }
+.date-input:disabled ~ .date-btn { opacity: .4; pointer-events: none; }
+.date-input:disabled { cursor: not-allowed; color: var(--fg-4); }
+.form-field .field-error { color: var(--danger-fg); font-size: var(--fs-caption); }
+
+.date-pop {
+  position: fixed;
+  z-index: 80;
+  width: 320px;
+  max-width: calc(100vw - 16px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--primario-50);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(15, 15, 15, .12);
+}
+.date-pop[hidden] { display: none; }
+.dcal-head { display: flex; align-items: center; justify-content: space-between; }
+.dcal-title { font: 400 var(--fs-read)/1.2 var(--font-sans); color: var(--fg-1); }
+.dcal-nav { display: flex; align-items: center; gap: 8px; }
+.dcal-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--primario-700);
+  cursor: pointer;
+}
+.dcal-btn .ms { font-size: 20px; }
+.dcal-btn:hover { background: var(--primario-25); }
+.dcal-btn:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--border-focus); }
+.dcal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.dcal-wd {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 400 var(--fs-caption)/1.2 var(--font-sans);
+  color: var(--primario-400);
+}
+.dcal-day {
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--fg-1);
+  font: 400 var(--fs-body)/1.2 var(--font-sans);
+  cursor: pointer;
+}
+.dcal-day.is-out { color: var(--primario-200); }
+.dcal-day:hover { background: var(--acento-50); }
+.dcal-day.is-today { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.dcal-day.is-selected { background: var(--accent); color: var(--accent-on); font-weight: 600; }
+.dcal-day:focus-visible { outline: 2px solid var(--border-focus); outline-offset: -2px; }
+.dcal-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--primario-50); }
+.dcal-foot .pop-link:disabled { color: var(--fg-4); cursor: default; text-decoration: none; }
 
 /* ---------- Encabezado de listado + tabs ---------- */
 .list-header {

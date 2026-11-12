@@ -147,7 +147,13 @@
         </div>
         <div class="form-field">
           <label for="api-fecha">Fecha estimada de entrega</label>
-          <input id="api-fecha" name="fechaEstimadaEntrega" type="date">
+          <div class="date-field">
+            <input id="api-fecha" class="date-input" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" autocomplete="off" aria-describedby="api-fecha-error">
+            <button type="button" class="date-btn date-clear" data-date-clear aria-label="Borrar fecha" hidden><span class="ms" aria-hidden="true">close</span></button>
+            <button type="button" class="date-btn date-open" data-date-open aria-label="Abrir calendario" aria-haspopup="dialog" aria-expanded="false"><span class="ms" aria-hidden="true">calendar_month</span></button>
+            <input type="hidden" name="fechaEstimadaEntrega">
+          </div>
+          <small class="field-error" id="api-fecha-error" hidden></small>
         </div>
         <div class="form-field">
           <label for="api-prioridad">Prioridad *</label>
@@ -195,7 +201,13 @@
         </div>
         <div class="form-field">
           <label for="ep-fecha">Fecha estimada</label>
-          <input id="ep-fecha" name="fechaEstimada" type="date">
+          <div class="date-field">
+            <input id="ep-fecha" class="date-input" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" autocomplete="off" aria-describedby="ep-fecha-error">
+            <button type="button" class="date-btn date-clear" data-date-clear aria-label="Borrar fecha" hidden><span class="ms" aria-hidden="true">close</span></button>
+            <button type="button" class="date-btn date-open" data-date-open aria-label="Abrir calendario" aria-haspopup="dialog" aria-expanded="false"><span class="ms" aria-hidden="true">calendar_month</span></button>
+            <input type="hidden" name="fechaEstimada">
+          </div>
+          <small class="field-error" id="ep-fecha-error" hidden></small>
         </div>
         <div class="form-field">
           <label for="ep-prioridad">Prioridad *</label>
