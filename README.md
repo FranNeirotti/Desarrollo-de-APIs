@@ -120,6 +120,7 @@ Cada API del tablero está vinculada a un ticket de Jira: **el ticket es el camp
 
 1. Agrega un **comentario** en el ticket con el resumen actual (estado, % de avance, endpoints/features completados sobre el total, fecha estimada de entrega, prioridad) y la lista de cambios (por ejemplo `Estado: En Desarrollo → En QA / Testing` o `GET /api/Contratos: estado En Progreso → Completado`), con enlace al commit y al tablero.
 2. Si cambió el **estado de la API**, intenta la **transición** de Jira equivalente según el mapeo de `jira/config.json`. Si el ticket ya está en ese estado o no existe una transición posible desde su estado actual, solo comenta, sin fallar.
+3. Fija la **fecha de vencimiento** del ticket (`duedate`) igual a la **fecha estimada de entrega** de la API. Si la fecha cambió, el comentario lo indica (`Fecha de vencimiento en Jira: 2026-10-05 → 2026-12-25`). Si la API no tiene fecha, no se borra la del ticket (salvo que actives `"clearDueDate": true`). Si el campo no es editable para la cuenta del token, se registra una advertencia y se sigue.
 
 Además:
 
@@ -152,7 +153,7 @@ Cada estado del tablero tiene una lista de estados de Jira candidatos, en orden 
 | En Producción | Listo, Finalizado, Hecho, Done, Resuelto |
 | Bloqueada | En pausa, Bloqueado, Bloqueada, Blocked |
 
-En el mismo archivo podés desactivar todo (`"enabled": false`), solo los comentarios (`"comment": false`) o solo las transiciones (`"transitions": false`), excluir APIs (`"ignoreIds": ["peg-256"]`) y cambiar el enlace al tablero (`dashboardUrl`).
+En el mismo archivo podés desactivar todo (`"enabled": false`), solo los comentarios (`"comment": false`) o solo las transiciones (`"transitions": false`), no tocar la fecha de vencimiento (`"dueDate": false`) o borrarla cuando la API quede sin fecha (`"clearDueDate": true`), excluir APIs (`"ignoreIds": ["peg-256"]`) y cambiar el enlace al tablero (`dashboardUrl`).
 
 ### Ejecutarlo a mano o probarlo localmente
 

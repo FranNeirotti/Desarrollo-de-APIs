@@ -3,6 +3,8 @@
   "enabled": true,
   "comment": true,
   "transitions": true,
+  "dueDate": true,
+  "clearDueDate": false,
   "dashboardUrl": "https://franneirotti.github.io/Desarrollo-de-APIs/",
   "ignoreIds": [],
   "statusMap": {

@@ -40,8 +40,28 @@ export function stableStringify(value) {
   return JSON.stringify(value === undefined ? null : value);
 }
 
+// La versión entra en el hash: al cambiar qué se sincroniza (v2: fecha de vencimiento) se re-sincronizan los tickets.
+export const SYNC_VERSION = 2;
+
 export function syncHash(api) {
-  return createHash('sha256').update(stableStringify(api)).digest('hex').slice(0, 16);
+  return createHash('sha256').update(stableStringify({ v: SYNC_VERSION, api })).digest('hex').slice(0, 16);
+}
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+// Fecha de vencimiento deseada en Jira: la fecha estimada de entrega de la API si es válida (YYYY-MM-DD).
+export function dueDateOf(api) {
+  const f = String((api && api.fechaEstimadaEntrega) || '').trim();
+  return DATE_RE.test(f) && !Number.isNaN(Date.parse(`${f}T00:00:00Z`)) ? f : '';
+}
+
+// Qué hacer con el campo duedate del ticket: { action: 'set' | 'clear' | 'none', value }.
+export function planDueDate(api, currentDueDate, config = {}) {
+  if (config.dueDate === false) return { action: 'none' };
+  const want = dueDateOf(api);
+  const cur = currentDueDate || '';
+  if (want) return want === cur ? { action: 'none', value: want } : { action: 'set', value: want, from: cur };
+  if (cur && config.clearDueDate === true) return { action: 'clear', value: null, from: cur };
+  return { action: 'none' };
 }
 
 const endpointsOf = (api) => (Array.isArray(api && api.endpointsFeatures) ? api.endpointsFeatures : []);
@@ -267,7 +287,8 @@ export function createJiraClient({ baseUrl, email, token, fetchImpl = globalThis
   }
   const k = (key) => encodeURIComponent(key);
   return {
-    getIssue: (key) => call('GET', `/issue/${k(key)}?fields=status,summary`),
+    getIssue: (key) => call('GET', `/issue/${k(key)}?fields=status,summary,duedate`),
+    setDueDate: (key, date) => call('PUT', `/issue/${k(key)}`, { fields: { duedate: date } }),
     getProperty: async (key) => {
       try {
         const r = await call('GET', `/issue/${k(key)}/properties/${PROPERTY_KEY}`);
@@ -320,8 +341,21 @@ export async function syncEntry(entry, { client, config, ctx, log }) {
       }
     }
   }
+  const extra = [];
+  const due = planDueDate(entry.api, issue && issue.fields ? issue.fields.duedate : '', config);
+  if (due.action !== 'none') {
+    try {
+      await client.setDueDate(key, due.value);
+      const line = `Fecha de vencimiento en Jira: ${arrow(due.from, due.value || 'sin fecha')}`;
+      extra.push(line);
+      log.info(`${key}: ${line}.`);
+    } catch (e) {
+      if (e.status === 401) throw e;
+      log.warn(`${key}: no se pudo actualizar la fecha de vencimiento (${e.message}); se continúa.`);
+    }
+  }
   if (config.comment !== false) {
-    await client.addComment(key, commentAdf(entry, ctx));
+    await client.addComment(key, commentAdf(extra.length ? { ...entry, changes: [...entry.changes, ...extra] } : entry, ctx));
     log.info(`${key}: comentario agregado.`);
   }
   await client.setProperty(key, { hash: entry.hash, commit: ctx.commit || null, syncedAt: new Date().toISOString() });
@@ -367,6 +401,11 @@ export async function run({ beforeData, afterData, config, dryRun, env, ctx, log
       const targets = entry.estadoChanged && config.transitions !== false ? targetStatuses(config, entry.summary.estado) : [];
       log.info(`[dry-run] ${entry.key}${entry.isNew ? ' (API nueva)' : ''}`);
       if (targets.length) log.info(`  Transición a: ${targets.join(' / ')} (si existe y no está ya en ese estado)`);
+      if (config.dueDate !== false) {
+        const due = dueDateOf(entry.api);
+        if (due) log.info(`  Fecha de vencimiento: ${due} (si difiere de la actual)`);
+        else if (config.clearDueDate === true) log.info('  Fecha de vencimiento: se borra (la API no tiene fecha)');
+      }
       if (config.comment !== false) log.info(commentText(entry, ctx).split('\n').map((l) => `  | ${l}`).join('\n'));
       stats.planned++;
       continue;

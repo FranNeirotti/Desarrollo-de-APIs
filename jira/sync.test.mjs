@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import {
   ticketKey, diffApis, summarize, pickTransition, targetStatuses, isInTarget,
-  syncHash, commentText, commentAdf, run, PROPERTY_KEY,
+  syncHash, commentText, commentAdf, run, PROPERTY_KEY, planDueDate, dueDateOf,
 } from './sync.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -110,10 +110,11 @@ test('mapeo de estados a transiciones reales de Jira', () => {
   }
 });
 
-// Jira simulado: AGN-906 existe en "Ajustes"; PEG-256 no existe.
-function fakeJira() {
+// Jira simulado: AGN-906 existe en "Ajustes" con vencimiento 2026-10-05; PEG-256 no existe.
+function fakeJira({ dueDate = '2026-10-05', dueStatus = 204 } = {}) {
   const props = {};
   const calls = [];
+  const state = { duedate: dueDate, comments: [] };
   const fetchImpl = async (url, opts) => {
     const p = new URL(url).pathname.replace('/rest/api/3', '');
     calls.push(`${opts.method} ${p}`);
@@ -122,16 +123,21 @@ function fakeJira() {
     if (!m) return json(404);
     const [, key, rest] = m;
     if (key !== 'AGN-906') return json(404, { errorMessages: ['La incidencia no existe'] });
-    if (rest === '') return json(200, { fields: { status: { name: 'Ajustes' } } });
+    if (rest === '' && opts.method === 'PUT') {
+      if (dueStatus >= 400) return json(dueStatus, { errorMessages: ['Campo no editable'] });
+      state.duedate = JSON.parse(opts.body).fields.duedate;
+      return json(204);
+    }
+    if (rest === '') return json(200, { fields: { status: { name: 'Ajustes' }, duedate: state.duedate } });
     if (rest === `/properties/${PROPERTY_KEY}`) {
       if (opts.method === 'PUT') { props[key] = JSON.parse(opts.body); return json(200, {}); }
       return props[key] ? json(200, { value: props[key] }) : json(404);
     }
     if (rest === '/transitions') return opts.method === 'GET' ? json(200, { transitions: TRANSITIONS }) : { ok: true, status: 204, text: async () => '' };
-    if (rest === '/comment') return json(201, { id: '1' });
+    if (rest === '/comment') { state.comments.push(opts.body); return json(201, { id: '1' }); }
     return json(404);
   };
-  return { fetchImpl, calls };
+  return { fetchImpl, calls, state };
 }
 
 test('sincronización: transición + comentario, ticket inexistente e idempotencia', async () => {
@@ -167,4 +173,52 @@ test('sin transición equivalente solo comenta; sin secrets no falla', async () 
 
   const s2 = await run({ beforeData: before, afterData: after, config, dryRun: false, env: {}, ctx: {}, log: silent });
   assert.equal(s2.skipped, 1);
+});
+
+const ENV = { JIRA_BASE_URL: 'https://ejemplo.atlassian.net', JIRA_EMAIL: 'a@b.c', JIRA_API_TOKEN: 'x' };
+const forcedAgn = (mutate) => {
+  const after = real();
+  const api = after.apis.find((a) => a.id === 'agn-906');
+  if (mutate) mutate(api);
+  return { beforeData: null, afterData: after, only: ['agn-906'], config, dryRun: false, env: ENV, ctx: {}, log: silent };
+};
+
+test('planDueDate: fija la fecha de entrega, no borra por defecto y respeta la config', () => {
+  assert.equal(dueDateOf({ fechaEstimadaEntrega: '2026-12-25' }), '2026-12-25');
+  assert.equal(dueDateOf({ fechaEstimadaEntrega: '25/12/2026' }), '');
+  assert.deepEqual(planDueDate({ fechaEstimadaEntrega: '2026-12-25' }, '2026-10-05', config), { action: 'set', value: '2026-12-25', from: '2026-10-05' });
+  assert.equal(planDueDate({ fechaEstimadaEntrega: '2026-12-25' }, '2026-12-25', config).action, 'none');
+  assert.equal(planDueDate({ fechaEstimadaEntrega: '' }, '2026-10-05', config).action, 'none');
+  assert.equal(planDueDate({ fechaEstimadaEntrega: '' }, '2026-10-05', { ...config, clearDueDate: true }).action, 'clear');
+  assert.equal(planDueDate({ fechaEstimadaEntrega: '2026-12-25' }, '', { ...config, dueDate: false }).action, 'none');
+});
+
+test('sync real de AGN-906 actualiza el vencimiento y lo menciona en el comentario', async () => {
+  const args = forcedAgn();
+  const fecha = args.afterData.apis.find((a) => a.id === 'agn-906').fechaEstimadaEntrega;
+  const { fetchImpl, calls, state } = fakeJira();
+  const s = await run({ ...args, fetchImpl });
+  assert.equal(s.synced, 1);
+  assert.equal(state.duedate, fecha);
+  assert.ok(calls.includes('PUT /issue/AGN-906'));
+  assert.ok(state.comments[0].includes(`Fecha de vencimiento en Jira: 2026-10-05 → ${fecha}`));
+  // idempotente: segunda corrida no vuelve a escribir
+  calls.length = 0;
+  assert.equal((await run({ ...args, fetchImpl })).unchanged, 1);
+  assert.ok(!calls.includes('PUT /issue/AGN-906'));
+});
+
+test('sin fecha no borra el vencimiento; campo no editable solo advierte', async () => {
+  const sinFecha = fakeJira();
+  await run({ ...forcedAgn((a) => { a.fechaEstimadaEntrega = ''; }), fetchImpl: sinFecha.fetchImpl });
+  assert.equal(sinFecha.state.duedate, '2026-10-05');
+  assert.ok(!sinFecha.calls.includes('PUT /issue/AGN-906'));
+
+  const bloqueado = fakeJira({ dueStatus: 403 });
+  const warns = [];
+  const s = await run({ ...forcedAgn(), fetchImpl: bloqueado.fetchImpl, log: { ...silent, warn: (m) => warns.push(m) } });
+  assert.deepEqual([s.synced, s.failed], [1, 0]);
+  assert.equal(bloqueado.state.duedate, '2026-10-05');
+  assert.ok(warns.some((w) => w.includes('fecha de vencimiento')));
+  assert.equal(bloqueado.state.comments.length, 1);
 });
