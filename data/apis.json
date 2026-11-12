@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-12T00:11:05.711Z",
+  "actualizado": "2026-11-12T11:29:01.704Z",
   "apis": [
     {
       "id": "agn-906",
@@ -17,7 +17,7 @@
       ],
       "estadoGeneral": "En Desarrollo",
       "prioridad": "Alta",
-      "fechaEstimadaEntrega": "2026-12-25",
+      "fechaEstimadaEntrega": "2026-11-25",
       "endpointsFeatures": [
         {
           "id": "agn-906-ep-01",
