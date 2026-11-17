@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-12T11:29:01.704Z",
+  "actualizado": "2026-11-17T15:45:17.334Z",
   "apis": [
     {
       "id": "agn-906",
@@ -386,6 +386,22 @@
           "fechaEstimada": "2026-10-29"
         }
       ]
+    },
+    {
+      "id": "agn-1257",
+      "nombre": "Pendientes agronegocios",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Backoffice"
+      ],
+      "estadoGeneral": "Planificada",
+      "prioridad": "Alta",
+      "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
     },
     {
       "id": "ce-362",
