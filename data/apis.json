@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-17T16:06:14.268Z",
+  "actualizado": "2026-11-17T16:08:29.204Z",
   "apis": [
     {
       "id": "agn-1760",
@@ -339,9 +339,9 @@
       "desarrolloAfectado": [
         "Backoffice"
       ],
-      "estadoGeneral": "Planificada",
-      "prioridad": "Media",
-      "fechaEstimadaEntrega": "",
+      "estadoGeneral": "En Desarrollo",
+      "prioridad": "Alta",
+      "fechaEstimadaEntrega": "2026-11-17",
       "endpointsFeatures": []
     },
     {
@@ -373,7 +373,7 @@
         "Backoffice"
       ],
       "estadoGeneral": "En QA / Testing",
-      "prioridad": "Baja",
+      "prioridad": "Alta",
       "fechaEstimadaEntrega": "2026-10-28",
       "endpointsFeatures": [
         {
@@ -460,7 +460,7 @@
         "backoffice"
       ],
       "estadoGeneral": "En QA / Testing",
-      "prioridad": "Media",
+      "prioridad": "Alta",
       "fechaEstimadaEntrega": "2026-10-28",
       "endpointsFeatures": [
         {
@@ -474,6 +474,23 @@
           "fechaEstimada": "2026-10-28"
         }
       ]
+    },
+    {
+      "id": "ce-233",
+      "nombre": "Posición dolarizada",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Agronegocios",
+        "Backoffice"
+      ],
+      "estadoGeneral": "En Desarrollo",
+      "prioridad": "Alta",
+      "fechaEstimadaEntrega": "2026-10-28",
+      "endpointsFeatures": []
     },
     {
       "id": "agn-1761",
@@ -507,23 +524,6 @@
       "endpointsFeatures": []
     },
     {
-      "id": "peg-143",
-      "nombre": "Blogstorage ampliar a todas las CPE",
-      "contexto": "",
-      "responsable": {
-        "nombre": "Julian veron",
-        "rol": "Luciano Scaiano"
-      },
-      "desarrolloAfectado": [
-        "backoffice",
-        "Portal descargas"
-      ],
-      "estadoGeneral": "Planificada",
-      "prioridad": "Media",
-      "fechaEstimadaEntrega": "",
-      "endpointsFeatures": []
-    },
-    {
       "id": "agn-229",
       "nombre": "Mercadería entregada pendiente de aplicar",
       "contexto": "COMO usuario de la cooperativa o del backoffice QUIERO visualizar el detalle de toneladas pendientes de aplicar con distribución por grano, grilla de compradores y grilla de vendedores PARA comprender mi posición operativa por contraparte y poder navegar al detalle de descargas de cada comprador.\n\nUbicaciones\n\nEstado de cuenta / Búsqueda por cooperativa / Pendiente de Aplicar\n\nEstadísticas / Agronegocios / Corretaje / Pendiente de Aplicar\n\nhttps://www.figma.com/proto/BQi7Srkbjk0zfiKdTo4qzG/GIRO---BACKOFFICE?page-id=10003%3A5401&node-id=10565-4254&viewport=-469%2C-6696%2C0.42&t=Z1eibgCvdHuFBA09-1&scaling=scale-down&content-scaling=fixed&starting-point-node-id=10565%3A4254",
@@ -537,7 +537,7 @@
         "Agronegocios"
       ],
       "estadoGeneral": "En QA / Testing",
-      "prioridad": "Baja",
+      "prioridad": "Media",
       "fechaEstimadaEntrega": "",
       "endpointsFeatures": [
         {
@@ -563,25 +563,25 @@
       ]
     },
     {
-      "id": "ce-233",
-      "nombre": "Posición dolarizada",
+      "id": "peg-143",
+      "nombre": "Blogstorage ampliar a todas las CPE",
       "contexto": "",
       "responsable": {
         "nombre": "Julian veron",
         "rol": "Luciano Scaiano"
       },
       "desarrolloAfectado": [
-        "Agronegocios",
-        "Backoffice"
+        "backoffice",
+        "Portal descargas"
       ],
-      "estadoGeneral": "En Desarrollo",
+      "estadoGeneral": "Planificada",
       "prioridad": "Media",
-      "fechaEstimadaEntrega": "2026-10-28",
+      "fechaEstimadaEntrega": "",
       "endpointsFeatures": []
     },
     {
       "id": "agn-383",
-      "nombre": "Disponibilidad granaria",
+      "nombre": "Disponibilidad granaria y PLP",
       "contexto": "",
       "responsable": {
         "nombre": "Julian veron",
@@ -591,7 +591,7 @@
         "Agronegocios",
         "Backoffice"
       ],
-      "estadoGeneral": "En Desarrollo",
+      "estadoGeneral": "En QA / Testing",
       "prioridad": "Media",
       "fechaEstimadaEntrega": "",
       "endpointsFeatures": []
