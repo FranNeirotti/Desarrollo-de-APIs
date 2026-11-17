@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-17T15:51:03.730Z",
+  "actualizado": "2026-11-17T15:51:51.478Z",
   "apis": [
     {
       "id": "agn-906",
@@ -418,7 +418,18 @@
       "estadoGeneral": "En QA / Testing",
       "prioridad": "Baja",
       "fechaEstimadaEntrega": "2026-10-28",
-      "endpointsFeatures": []
+      "endpointsFeatures": [
+        {
+          "id": "ce-362-ep-01",
+          "metodo": "GET",
+          "rutaONombre": "Ajustes",
+          "descripcion": "no devuelve datos:\nEl único origen habilitado es Timbúes (captura 1). Necochea, San Lorenzo y los demás responden “origen no encontrado” (captura 2).\nTimbúes devuelve error 502, “No fue posible consultar el origen”, con cualquier fecha (captura 3).\nPara avanzar, necesitamos Necochea, San Lorenzo y Timbúes habilitados y respondiendo en Test. Además, siguen sin respuesta los puntos del mail del 04/11, salvo el del token, que ya quedó resuelto.  \nhttps://api.acacoop.com.ar/test/exitencia-puertos/api/v1/origenes",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": "2026-10-28"
+        }
+      ]
     },
     {
       "id": "ce-361",
