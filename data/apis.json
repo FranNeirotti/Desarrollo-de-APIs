@@ -1,7 +1,24 @@
 {
   "version": 1,
-  "actualizado": "2026-11-17T15:59:42.432Z",
+  "actualizado": "2026-11-17T16:06:14.268Z",
   "apis": [
+    {
+      "id": "agn-1760",
+      "nombre": "Ajustes pendiente de fijar productores",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Backoffice",
+        "Agronegocios"
+      ],
+      "estadoGeneral": "En Desarrollo",
+      "prioridad": "Alta",
+      "fechaEstimadaEntrega": "2026-11-17",
+      "endpointsFeatures": []
+    },
     {
       "id": "agn-906",
       "nombre": "Aplicaciones (API descargas)",
@@ -312,92 +329,15 @@
       ]
     },
     {
-      "id": "peg-256",
-      "nombre": "Velocidad operativa puertos",
+      "id": "agn-1759",
+      "nombre": "API graph ambiente TEST fijaciones efectuadas",
       "contexto": "",
       "responsable": {
         "nombre": "Julian veron",
         "rol": "Luciano Scaiano"
       },
       "desarrolloAfectado": [
-        "Estadisticas",
         "Backoffice"
-      ],
-      "estadoGeneral": "Planificada",
-      "prioridad": "Alta",
-      "fechaEstimadaEntrega": "",
-      "endpointsFeatures": []
-    },
-    {
-      "id": "peg-142",
-      "nombre": "Descargas en puertos",
-      "contexto": "Api que devuelve los camiones en puerto, puntualmente los demorados",
-      "responsable": {
-        "nombre": "Julian veron",
-        "rol": "Luciano Scaiano"
-      },
-      "desarrolloAfectado": [
-        "Portal descargas",
-        "Agronegocios",
-        "B ackoffice"
-      ],
-      "estadoGeneral": "En Desarrollo",
-      "prioridad": "Alta",
-      "fechaEstimadaEntrega": "2026-10-29",
-      "endpointsFeatures": [
-        {
-          "id": "peg-142-ep-01",
-          "metodo": "GET",
-          "rutaONombre": "Camiones en puertos",
-          "descripcion": "",
-          "estado": "Pendiente",
-          "prioridad": "Media",
-          "responsableFeature": "",
-          "fechaEstimada": "2026-10-29"
-        },
-        {
-          "id": "peg-142-ep-02",
-          "metodo": "POST",
-          "rutaONombre": "Cambio de estado en puerto",
-          "descripcion": "Aprobar y rechazar pasar camiones a conforme o rechazado desde el portal, sin la necesidad de tener que hacerlo desde el sistema de pesaje",
-          "estado": "Pendiente",
-          "prioridad": "Media",
-          "responsableFeature": "",
-          "fechaEstimada": "2026-10-29"
-        },
-        {
-          "id": "peg-142-ep-03",
-          "metodo": "GET",
-          "rutaONombre": "Estados en puerto",
-          "descripcion": "Todos los estados por los que pasa un camión en el puerto (dentro y fuera de calado)",
-          "estado": "Pendiente",
-          "prioridad": "Media",
-          "responsableFeature": "",
-          "fechaEstimada": "2026-10-29"
-        },
-        {
-          "id": "peg-142-ep-04",
-          "metodo": "GET",
-          "rutaONombre": "Fila en puerto",
-          "descripcion": "",
-          "estado": "Pendiente",
-          "prioridad": "Media",
-          "responsableFeature": "",
-          "fechaEstimada": "2026-10-29"
-        }
-      ]
-    },
-    {
-      "id": "peg-143",
-      "nombre": "Blogstorage ampliar a todas las CPE",
-      "contexto": "",
-      "responsable": {
-        "nombre": "Julian veron",
-        "rol": "Luciano Scaiano"
-      },
-      "desarrolloAfectado": [
-        "backoffice",
-        "Portal descargas"
       ],
       "estadoGeneral": "Planificada",
       "prioridad": "Media",
@@ -449,6 +389,65 @@
       ]
     },
     {
+      "id": "peg-142",
+      "nombre": "Descargas en puertos",
+      "contexto": "Api que devuelve los camiones en puerto, puntualmente los demorados",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Portal descargas",
+        "Agronegocios",
+        "Backoffice"
+      ],
+      "estadoGeneral": "En Desarrollo",
+      "prioridad": "Alta",
+      "fechaEstimadaEntrega": "2026-10-29",
+      "endpointsFeatures": [
+        {
+          "id": "peg-142-ep-01",
+          "metodo": "GET",
+          "rutaONombre": "Camiones en puertos",
+          "descripcion": "",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": "2026-10-29"
+        },
+        {
+          "id": "peg-142-ep-02",
+          "metodo": "POST",
+          "rutaONombre": "Cambio de estado en puerto",
+          "descripcion": "Aprobar y rechazar pasar camiones a conforme o rechazado desde el portal, sin la necesidad de tener que hacerlo desde el sistema de pesaje",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": "2026-10-29"
+        },
+        {
+          "id": "peg-142-ep-03",
+          "metodo": "GET",
+          "rutaONombre": "Estados en puerto",
+          "descripcion": "Todos los estados por los que pasa un camión en el puerto (dentro y fuera de calado)",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": "2026-10-29"
+        },
+        {
+          "id": "peg-142-ep-04",
+          "metodo": "GET",
+          "rutaONombre": "Fila en puerto",
+          "descripcion": "",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": "2026-10-29"
+        }
+      ]
+    },
+    {
       "id": "ce-361",
       "nombre": "Calidad de granos",
       "contexto": "",
@@ -475,6 +474,54 @@
           "fechaEstimada": "2026-10-28"
         }
       ]
+    },
+    {
+      "id": "agn-1761",
+      "nombre": "Profundidad y detalle Dispo Granaria",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [],
+      "estadoGeneral": "Planificada",
+      "prioridad": "Alta",
+      "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
+    },
+    {
+      "id": "peg-256",
+      "nombre": "Velocidad operativa puertos",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Estadisticas",
+        "Backoffice"
+      ],
+      "estadoGeneral": "Planificada",
+      "prioridad": "Alta",
+      "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
+    },
+    {
+      "id": "peg-143",
+      "nombre": "Blogstorage ampliar a todas las CPE",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "backoffice",
+        "Portal descargas"
+      ],
+      "estadoGeneral": "Planificada",
+      "prioridad": "Media",
+      "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
     },
     {
       "id": "agn-229",
@@ -561,39 +608,6 @@
         "Estadisticas",
         "Backoffice",
         "Puertos"
-      ],
-      "estadoGeneral": "Planificada",
-      "prioridad": "Media",
-      "fechaEstimadaEntrega": "",
-      "endpointsFeatures": []
-    },
-    {
-      "id": "agn-1759",
-      "nombre": "API graph ambiente TEST fijaciones efectuadas",
-      "contexto": "",
-      "responsable": {
-        "nombre": "Julian veron",
-        "rol": "Luciano Scaiano"
-      },
-      "desarrolloAfectado": [
-        "Backoffice"
-      ],
-      "estadoGeneral": "Planificada",
-      "prioridad": "Media",
-      "fechaEstimadaEntrega": "",
-      "endpointsFeatures": []
-    },
-    {
-      "id": "agn-925",
-      "nombre": "Disponibilidad granaria y PLP",
-      "contexto": "Ajustes de la API para adaptar a plp",
-      "responsable": {
-        "nombre": "Julian veron",
-        "rol": "Luciano Scaiano"
-      },
-      "desarrolloAfectado": [
-        "Backoffice",
-        "Agronegocios"
       ],
       "estadoGeneral": "Planificada",
       "prioridad": "Media",
