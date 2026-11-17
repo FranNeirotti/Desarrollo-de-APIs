@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-17T15:47:55.696Z",
+  "actualizado": "2026-11-17T15:50:37.109Z",
   "apis": [
     {
       "id": "agn-906",
@@ -467,10 +467,31 @@
         "Backoffice",
         "Agronegocios"
       ],
-      "estadoGeneral": "En Producción",
+      "estadoGeneral": "En QA / Testing",
       "prioridad": "Baja",
       "fechaEstimadaEntrega": "",
-      "endpointsFeatures": []
+      "endpointsFeatures": [
+        {
+          "id": "agn-229-ep-01",
+          "metodo": "GET",
+          "rutaONombre": "ajustes 1",
+          "descripcion": "widget de pendiente por grano;\ndetalle con gráfico por grano y grillas de compradores y vendedores;\ndetalle de descargas por comprador.\n \nEl filtro por segmento comercial queda resuelto. Para poder avanzar con la integración necesitamos los siguientes ajustes.\n \nEn este mail NO se tiene en cuenta las pantallas de Backoffice y Agronegocios de CPE. PTE. APLICAR. Por lo que mas adelante se enviará otro con el análisis técnico de ese endpoint de la API si fuese necesario.\n \n1. Mercadería Entregada Pendiente de Aplicar: totales\n \nEl widget y la pantalla de detalle muestran totales absolutos de toneladas pendientes por grano, por comprador y por vendedor, además del total general, siempre según los filtros seleccionados. Con la paginación obligatoria (máximo 500 registros por página) no podemos garantizar que esos totales sean correctos:\n \nNo hay forma de traer todos los registros en una sola consulta.\nComo la consulta es en tiempo real, si un movimiento se aplica mientras recorremos las páginas, el resto de los registros se desplaza y se pueden omitir o duplicar filas sin que podamos detectarlo.\nEl campo total informa la cantidad de registros, no la suma de kilos, por lo que no permite validar el resultado.\n \nPara resolverlo necesitamos una de estas dos alternativas:\n \nQue el endpoint permita consultar sin paginación, devolviendo todos los registros que cumplan los filtros. Con esto nos encargariamos nosotros de los filtros, ordenamientos, paginado, etc.\nNos proveen ustedes los filtros, ordenamientos, paginado, etc. y agregan endpoints de totales que acepten los mismos filtros (unidad de negocio, grano, comprador, vendedor y segmento) y devuelvan los kilos pendientes:\ntotal general;\nagrupados por grano;\nagrupados por comprador;\nagrupados por vendedor.\n \nAdemás, necesitamos que nos confirmen:\n \nCriterio de agrupación: ¿por qué campos agrupa hoy el endpoint? ¿Cuántos registros devuelve aproximadamente por unidad de negocio?\nConsistencia con CPe: para un mismo comprador y los mismos filtros, ¿la suma de kilos de Mercadería Entregada coincide con la del endpoint de CPe Pendiente? Desde la grilla de compradores se navega al detalle de descargas, y ambos valores tienen que cerrar.",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        },
+        {
+          "id": "agn-229-ep-02",
+          "metodo": "GET",
+          "rutaONombre": "Ajustes 2",
+          "descripcion": "2. CPe Pendiente de Aplicar: pantalla de descargas por comprador\n \nEsta pantalla muestra, para el comprador seleccionado, una grilla con las CPe pendientes, ordenable por cualquier columna, filtrable por destino, zona y CTG, y con el total de toneladas pendientes. Necesitamos una de estas dos alternativas:\n \na) Consulta sin paginación filtrada por comprador.\nb) Que el endpoint paginado informe el total de kilos pendientes del conjunto filtrado, además de la cantidad de registros.\n \nEn cualquiera de las dos alternativas, la grilla requiere estos datos que hoy no vienen en la respuesta:\n \nZona\nProcedencia\nKilos netos\nKilos netos sin merma (o kilos brutos y merma)\nGrado\nFactor\n \n3. Consultas generales\n \nCorretaje: las pantallas trabajan sobre la unidad de negocio CO, y el documento indica que la implementación definitiva de Corretaje está pendiente. ¿Para qué fecha estaría disponible?\nTotal de registros: ¿pueden confirmar que el campo total respeta los filtros aplicados? En Descarga Service devolvía siempre el mismo valor.\nFiltros con varios valores: las pantallas permiten seleccionar varios compradores o vendedores a la vez. Si los filtros pudieran aceptar más de un valor (por ejemplo comprador=100001,100002), nos simplificaría la integración.",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": ""
+        }
+      ]
     },
     {
       "id": "agn-383",
