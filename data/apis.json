@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-17T15:50:37.109Z",
+  "actualizado": "2026-11-17T15:51:03.730Z",
   "apis": [
     {
       "id": "agn-906",
@@ -415,7 +415,7 @@
         "Estadisticas",
         "Backoffice"
       ],
-      "estadoGeneral": "Planificada",
+      "estadoGeneral": "En QA / Testing",
       "prioridad": "Baja",
       "fechaEstimadaEntrega": "2026-10-28",
       "endpointsFeatures": []
