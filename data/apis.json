@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "2026-11-17T15:51:51.478Z",
+  "actualizado": "2026-11-17T15:59:42.432Z",
   "apis": [
     {
       "id": "agn-906",
@@ -359,7 +359,7 @@
           "id": "peg-142-ep-02",
           "metodo": "POST",
           "rutaONombre": "Cambio de estado en puerto",
-          "descripcion": "Aprobar y rechazar pasar camiones a condicional o rechazado desde el portal, sin la necesidad de tener que hacerlo desde el sistema de pesaje",
+          "descripcion": "Aprobar y rechazar pasar camiones a conforme o rechazado desde el portal, sin la necesidad de tener que hacerlo desde el sistema de pesaje",
           "estado": "Pendiente",
           "prioridad": "Media",
           "responsableFeature": "",
@@ -386,6 +386,23 @@
           "fechaEstimada": "2026-10-29"
         }
       ]
+    },
+    {
+      "id": "peg-143",
+      "nombre": "Blogstorage ampliar a todas las CPE",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "backoffice",
+        "Portal descargas"
+      ],
+      "estadoGeneral": "Planificada",
+      "prioridad": "Media",
+      "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
     },
     {
       "id": "agn-1257",
@@ -443,27 +460,21 @@
         "Estadisticas",
         "backoffice"
       ],
-      "estadoGeneral": "En Desarrollo",
+      "estadoGeneral": "En QA / Testing",
       "prioridad": "Media",
       "fechaEstimadaEntrega": "2026-10-28",
-      "endpointsFeatures": []
-    },
-    {
-      "id": "ce-233",
-      "nombre": "Posición dolarizada",
-      "contexto": "",
-      "responsable": {
-        "nombre": "Julian veron",
-        "rol": "Luciano Scaiano"
-      },
-      "desarrolloAfectado": [
-        "Agronegocios",
-        "Backoffice"
-      ],
-      "estadoGeneral": "En Desarrollo",
-      "prioridad": "Media",
-      "fechaEstimadaEntrega": "2026-10-28",
-      "endpointsFeatures": []
+      "endpointsFeatures": [
+        {
+          "id": "ce-361-ep-01",
+          "metodo": "GET",
+          "rutaONombre": "Ajustes",
+          "descripcion": "Test ya responde. Sin token devuelve 401 \"missing bearer token\". Con el token que emite POST https://api.acacoop.com.ar/api/interfase/login, aceptado en el mismo momento por la API de Test de Existencias en Puerto, devuelve 401 \"invalid token\":\nGET https://api.acacoop.com.ar/test/calidad-granos/api/v1/calidades/descargas?uniNego=CO&fechaDesde=202…\n\n\n\n \nNecesitamos saber qué token espera esta API y cómo se obtiene: emisor, credenciales y vigencia.\nSiguen pendientes los puntos de contrato del mail anterior (4 a 9).",
+          "estado": "Pendiente",
+          "prioridad": "Media",
+          "responsableFeature": "",
+          "fechaEstimada": "2026-10-28"
+        }
+      ]
     },
     {
       "id": "agn-229",
@@ -505,6 +516,23 @@
       ]
     },
     {
+      "id": "ce-233",
+      "nombre": "Posición dolarizada",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Agronegocios",
+        "Backoffice"
+      ],
+      "estadoGeneral": "En Desarrollo",
+      "prioridad": "Media",
+      "fechaEstimadaEntrega": "2026-10-28",
+      "endpointsFeatures": []
+    },
+    {
       "id": "agn-383",
       "nombre": "Disponibilidad granaria",
       "contexto": "",
@@ -533,6 +561,39 @@
         "Estadisticas",
         "Backoffice",
         "Puertos"
+      ],
+      "estadoGeneral": "Planificada",
+      "prioridad": "Media",
+      "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
+    },
+    {
+      "id": "agn-1759",
+      "nombre": "API graph ambiente TEST fijaciones efectuadas",
+      "contexto": "",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Backoffice"
+      ],
+      "estadoGeneral": "Planificada",
+      "prioridad": "Media",
+      "fechaEstimadaEntrega": "",
+      "endpointsFeatures": []
+    },
+    {
+      "id": "agn-925",
+      "nombre": "Disponibilidad granaria y PLP",
+      "contexto": "Ajustes de la API para adaptar a plp",
+      "responsable": {
+        "nombre": "Julian veron",
+        "rol": "Luciano Scaiano"
+      },
+      "desarrolloAfectado": [
+        "Backoffice",
+        "Agronegocios"
       ],
       "estadoGeneral": "Planificada",
       "prioridad": "Media",
